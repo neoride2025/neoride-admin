@@ -5,12 +5,10 @@
     [color]="config?.color || 'success'"
     [delay]="config?.delay || 3000"
     (visibleChange)="onVisibleChange($event)"
-    >
-    @if (config?.header) {
-      <c-toast-header>
-        <strong class="me-auto">{{ config?.header }}</strong>
-      </c-toast-header>
-    }
+  >
+    <c-toast-header *ngIf="config?.header">
+      <strong class="me-auto">{{ config?.header }}</strong>
+    </c-toast-header>
 
     <c-toast-body>
       {{ config?.message }}
