@@ -1,12 +1,12 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { ToastModule } from '@coreui/angular';
 import { ToastConfig } from '../../others/toast.model';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-custom-toast',
-  imports: [ToastModule],
+  imports: [CommonModule, ToastModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './custom-toast.component.html',
   styleUrl: './custom-toast.component.scss',
