@@ -1,10 +1,11 @@
 import { AuthAPIService } from '../apis/auth.service';
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, } from '@angular/common/http';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { throwError, BehaviorSubject, EMPTY } from 'rxjs';
 import { HttpRequest, HttpHandler } from '@angular/common/http';
 import { HelperService } from '../services/helper.service';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -19,20 +20,25 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
 
+    // ✅ Only intercept API calls
+    if (!req.url.startsWith(environment.apiURL)) {
+      return next.handle(req);
+    }
+
     const accessToken = this.auth.getAccessToken() || sessionStorage.getItem('accessToken');
-
-    const isAuthApi = req.url.includes('/auth/login') || req.url.includes('/auth/register') || req.url.includes('/auth/refresh-token');
-
 
     const authReq = accessToken ? req.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } }) : req;
 
     return next.handle(authReq).pipe(
       catchError(err => {
-        // 🔴 DO NOT refresh for auth APIs
-        if (isAuthApi)
-          return throwError(() => err);
 
-        if (err.status === 401 && !this.isRefreshing) {
+        // ❌ DO NOT refresh blindly
+        if (!this.shouldRefreshToken(req, err)) {
+          return throwError(() => err);
+        }
+
+        // 🔄 refresh flow
+        if (!this.isRefreshing) {
           this.isRefreshing = true;
           this.refreshSubject.next(null);
 
@@ -50,17 +56,39 @@ export class AuthInterceptor implements HttpInterceptor {
                 })
               );
             }),
-            catchError(error => {
+            catchError(() => {
               this.isRefreshing = false;
               this.auth.logout();
-              this.helperService.goTo('login');
               return EMPTY;
             })
           );
         }
 
-        return throwError(() => err);
+        // 🟡 wait for refresh in progress
+        return this.refreshSubject.pipe(
+          filter(token => token !== null),
+          take(1),
+          switchMap(token =>
+            next.handle(
+              req.clone({
+                setHeaders: { Authorization: `Bearer ${token}` }
+              })
+            )
+          )
+        );
       })
     );
+
   }
+
+  private shouldRefreshToken(req: HttpRequest<any>, err: any): boolean {
+    return (
+      err.status === 401 &&
+      err.error?.error === 'ACCESS_TOKEN_EXPIRED' &&
+      !req.url.includes('/auth/login') &&
+      !req.url.includes('/auth/register') &&
+      !req.url.includes('/auth/refresh-token')
+    );
+  }
+
 }
