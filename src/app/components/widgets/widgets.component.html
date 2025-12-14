@@ -1,0 +1,31 @@
+<c-row class="g-4">
+  @for(widget of widgets; track widget; let i = $index) {
+  <c-col sm="6" xl="3">
+    <c-widget-stat-a [color]="widget.color" [title]="widget.title">
+      <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
+        {{widget.current}}
+        <span class="fw-normal" style="font-size: 12px;">
+          ({{widget.new}}% <svg cIcon [name]="widget.new > 0 ? 'cilArrowTop' : 'cilArrowBottom'" size="sm"></svg>)
+        </span>
+      </ng-template>
+      <ng-template cTemplateId="widgetActionTemplate">
+        <c-dropdown alignment="end" variant="btn-group">
+          <button [caret]="false" cButton cDropdownToggle class="p-0 text-white" color="transparent"
+            aria-label="Open dropdown">
+            <svg cIcon name="cilOptions"></svg>
+          </button>
+          <ul cDropdownMenu>
+            <li class="pointer"><a cDropdownItem>Action</a></li>
+            <li class="pointer"><a cDropdownItem>Another action</a></li>
+            <li class="pointer"><a cDropdownItem>Something else here</a></li>
+          </ul>
+        </c-dropdown>
+      </ng-template>
+      <ng-template cTemplateId="widgetChartTemplate">
+        <c-chart [data]="widget.data" [options]="widget.options" class="mt-3 mx-3" height="70"
+          [type]="widget.chartType" />
+      </ng-template>
+    </c-widget-stat-a>
+  </c-col>
+  }
+</c-row>

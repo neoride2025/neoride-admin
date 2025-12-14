@@ -1,0 +1,12 @@
+<c-card class="my-4">
+  <c-card-body>
+    <c-row>
+      <c-col sm="5">
+        <h4 class="card-title mb-0" id="traffic">Traffic - Total Bookings</h4>
+        <div class="small text-body-secondary">January - December 2025</div>
+      </c-col>
+    </c-row>
+    <c-chart [data]="mainChart.data" [height]="300" [ngStyle]="{ 'marginTop.px': 40 }" class="mt-3" [options]="mainChart.options"
+      type="line" (chartRef)="handleChartRef($event)"></c-chart>
+  </c-card-body>
+</c-card>
