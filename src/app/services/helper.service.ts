@@ -71,4 +71,19 @@ export class HelperService {
   clearCookie(name: string, path = '/') {
     document.cookie = `${name}=; Max-Age=0; path=${path}`;
   }
+
+  getRandomCoreUIColor(): any {
+    const colors: any[] = [
+      'primary',
+      'secondary',
+      'success',
+      'danger',
+      'warning',
+      'info'
+    ];
+
+    const index = Math.floor(Math.random() * colors.length);
+    return colors[index];
+  }
+
 }

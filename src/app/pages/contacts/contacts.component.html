@@ -1,1 +1,29 @@
-<p>contacts works!</p>
+<c-row class="g-4">
+  @for (contact of contactList; track contact._id) {
+  <c-col sm="12" md="6">
+    <c-callout [color]="randomColor" class="mb-3 bg-white">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <!-- Service type -->
+        <div>
+          <span class="badge bg-info">{{ contact.serviceType }}</span>
+          <!-- other examples -->
+          <!-- <span class="badge bg-success">Payment</span> -->
+          <!-- <span class="badge bg-warning text-dark">Support</span> -->
+        </div>
+        <small class="text-muted">{{ contact.createdAt | date: 'mediumDate' }} {{ contact.createdAt | date: 'shortTime' }}</small>
+      </div>
+
+      <!-- User details -->
+      <div class="mb-2">
+        <div><strong>Name:</strong> {{ contact.fname }}</div>
+        <div><strong>Email:</strong> {{ contact.email }}</div>
+        <div><strong>Mobile:</strong> {{ contact.mobile }}</div>
+      </div>
+
+      <!-- Message -->
+      <p class="mb-0 text-muted">{{ contact.message }}</p>
+    </c-callout>
+  </c-col>
+  }
+</c-row>
