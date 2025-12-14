@@ -4,7 +4,6 @@ import { HttpInterceptor, } from '@angular/common/http';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { throwError, BehaviorSubject, EMPTY } from 'rxjs';
 import { HttpRequest, HttpHandler } from '@angular/common/http';
-import { HelperService } from '../services/helper.service';
 import { environment } from '../../environments/environment';
 
 @Injectable()
@@ -15,7 +14,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
   constructor(
     private auth: AuthAPIService,
-    private helperService: HelperService
   ) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
@@ -32,7 +30,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError(err => {
 
-        // ❌ DO NOT refresh blindly
+        // check condition to skip refreshing
         if (!this.shouldRefreshToken(req, err)) {
           return throwError(() => err);
         }
@@ -78,7 +76,6 @@ export class AuthInterceptor implements HttpInterceptor {
         );
       })
     );
-
   }
 
   private shouldRefreshToken(req: HttpRequest<any>, err: any): boolean {
