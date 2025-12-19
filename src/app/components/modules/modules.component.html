@@ -1,0 +1,65 @@
+<c-row class="flex-space">
+  <h5 class="">Modules</h5>
+  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="moduleModal.id">Add Module</button>
+</c-row>
+<table cTable responsive>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Total Pages</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (module of paginatedData; track $index) {
+    <tr>
+      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
+      <td>{{ module.label }}</td>
+      <td>{{ module.totalPages }}</td>
+      <td class="d-flex gap-4">
+        <button cButton color="danger" size="sm">Delete</button>
+        <button cButton color="info" size="sm">Update</button>
+        <button cButton color="primary" size="sm">Activate</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>
+
+<c-pagination align="start">
+  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
+    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
+  </li>
+  @for (_ of pagesArray; track $index) {
+  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
+    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
+  </li>
+  }
+  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
+    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
+  </li>
+</c-pagination>
+
+<c-modal #moduleModal backdrop="static" alignment="center" id="moduleModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Module</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <div class="mb-2">
+        <label cLabel for="moduleName">Name</label>
+        <input cFormControl id="moduleName" type="text" />
+      </div>
+         <div class="mb-2">
+        <label cLabel for="modulePageCount">Total Pages</label>
+        <input cFormControl id="modulePageCount" type="number" />
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button [cModalToggle]="moduleModal.id" cButton color="secondary">Close</button>
+    <button cButton color="primary">{{ isModalForUpdate ? "Update" : "Add" }}</button>
+  </c-modal-footer>
+</c-modal>

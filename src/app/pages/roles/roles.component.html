@@ -1,0 +1,149 @@
+<c-row class="flex-space">
+  <h5 class="">Roles</h5>
+  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="roleModal.id">Add Role</button>
+</c-row>
+<table cTable responsive>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Total Permissions</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (role of paginatedData; track $index) {
+    <tr>
+      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
+      <td>{{ role.name }}</td>
+      <td>{{ role.role }}</td>
+      <td>{{ role.permissions.length }}</td>
+      <td class="d-flex gap-4">
+        <button cButton color="danger" size="sm" [disabled]="role.isSystemRole">Delete</button>
+        <button cButton color="info" size="sm">Update</button>
+        <button cButton color="primary" size="sm" [disabled]="role.isSystemRole">Activate</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>
+
+<c-pagination align="center">
+  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
+    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
+  </li>
+  @for (_ of pagesArray; track $index) {
+  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
+    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
+  </li>
+  }
+  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
+    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
+  </li>
+</c-pagination>
+
+<c-modal #roleModal backdrop="static" alignment="center" id="roleModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Role</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <div class="mb-2">
+        <label cLabel for="roleName">Name</label>
+        <input cFormControl id="roleName" type="text" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="roleEmail">Email Address</label>
+        <input cFormControl id="roleEmail" type="email" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="roleMobile">Mobile Number</label>
+        <input cFormControl id="roleMobile" type="number" />
+      </div>
+      <div class="mb-3">
+        <label cLabel for="roleRole">Role</label>
+        <input cFormControl id="roleRole" type="text" />
+      </div>
+      <div class="permissions-container">
+        <div class="chips-container-wrapper mb-3">
+          <div class="chips-container">
+            <label>Dashboard ({{ selectedItems.length }} / {{ sortedInterests.length }})</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="chips-container-wrapper">
+          <div class="chips-container">
+            <label>User Management</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="chips-container-wrapper mb-3">
+          <div class="chips-container">
+            <label>Dashboard</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="chips-container-wrapper">
+          <div class="chips-container">
+            <label>User Management</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="chips-container-wrapper mb-3">
+          <div class="chips-container">
+            <label>Dashboard</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="chips-container-wrapper">
+          <div class="chips-container">
+            <label>User Management</label>
+            <div class="chips-container">
+              @for (interest of sortedInterests; track $index) {
+              <div class="chip px-2 py-1" [class.active]="isSelected(interest)" (click)="toggleChip(interest)">
+                {{ interest }}
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button [cModalToggle]="roleModal.id" cButton color="secondary">Close</button>
+    <button cButton color="primary">{{ isModalForUpdate ? "Update" : "Add" }}</button>
+  </c-modal-footer>
+</c-modal>
