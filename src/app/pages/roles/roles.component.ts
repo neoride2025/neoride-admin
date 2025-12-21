@@ -1,83 +1,100 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { PageItemComponent, PageItemDirective, PageLinkDirective, PaginationComponent, PaginationModule, TableModule, ButtonDirective, FormDirective, FormControlDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective } from '@coreui/angular';
-import { IconDirective } from '@coreui/icons-angular';
+import { SharedModule } from './../../others/shared.module';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { PageItemComponent, PageItemDirective, PageLinkDirective, PaginationComponent, PaginationModule, TableModule, ButtonDirective, FormDirective, FormControlDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormCheckLabelDirective } from '@coreui/angular';
+import { RolesAPIService } from '../../apis/roles.service';
+import { HelperService } from '../../services/helper.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective],
+  imports: [SharedModule,
+    PageItemComponent,
+    TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
+    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, FormCheckComponent, FormCheckInputDirective, FormCheckLabelDirective, ModalFooterComponent, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class RolesComponent {
 
-  roles: any[] = [
-    {
-      "_id": "ADMIN",
-      "name": "Administrator",
-      "role": "Admin",
-      "description": "Full system access with all permissions",
-      "permissions": [
-        "DASHBOARD_VIEW",
-        "USERS_VIEW",
-        "USERS_CREATE",
-        "USERS_EDIT",
-        "USERS_DELETE",
-        "ROLES_VIEW",
-        "ROLES_MANAGE",
-        "CONTACTS_VIEW",
-        "CONTACTS_CREATE",
-        "CONTACTS_EDIT",
-        "CONTACTS_DELETE"
-      ],
-      "isSystemRole": true
-    },
-    {
-      "_id": "MODERATOR",
-      "name": "Moderator 1",
-      "role": "Moderator",
-      "description": "Can manage contacts and view users",
-      "permissions": [
-        "DASHBOARD_VIEW",
-        "USERS_VIEW",
-        "CONTACTS_VIEW",
-        "CONTACTS_CREATE",
-        "CONTACTS_EDIT"
-      ]
-    },
-    {
-      "_id": "VIEWER",
-      "name": "Viewer 1",
-      "role": "Viewer",
-      "description": "Read-only access",
-      "permissions": [
-        "DASHBOARD_VIEW",
-        "USERS_VIEW",
-        "CONTACTS_VIEW"
-      ]
-    }
-  ];
+  userData: any = {};
+  roles: any[] = [];
+  // filteredRoles: any[] = [];
   paginatedData: any[] = [];
+
+  search = '';
 
   currentPage = 1;
   pageSize = 5;
   totalPages = 0;
 
-  // new / update permission
+  // new / update role
+  showModal = false;
   isModalForUpdate = false;
-  interests: string[] = [
-    'JavaScript', 'Python', 'React', 'Vue.js', 'Angular',
-    'Node.js', 'TypeScript', 'HTML/CSS', 'MongoDB', 'PostgreSQL',
-    'Docker', 'Kubernetes', 'AWS', 'Machine Learning', 'DevOps',
-    'GraphQL', 'REST API', 'Git', 'Agile', 'Testing'
-  ];
   selectedItems: string[] = [];
+  modules: any[] = [];
+  roleForm: any = {
+    name: '',
+    description: '',
+    key: '',
+    permissions: []
+  };
+
+  constructor(
+    private role: RolesAPIService,
+    private helperService: HelperService,
+    private toastService: ToastService
+  ) {
+    this.userData = helperService.getDataFromSession('userInfo');
+  }
 
   ngOnInit() {
-    this.totalPages = Math.ceil(this.roles.length / this.pageSize);
+    this.getAllRoles();
+    this.getAllPermissions();
+  }
+
+  getAllRoles() {
+    this.role.getAllRoles().subscribe((res: any) => {
+      console.log('res : ', res);
+      if (res.status === 200) {
+        this.roles = res.data;
+        // this.filteredRoles = [...this.roles];
+        this.totalPages = Math.ceil(this.roles.length / this.pageSize);
+        this.updatePagination();
+      }
+      else 
+        this.toastService.info(res.message);
+    }, err => {
+      console.log('err : ', err);
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  // function for search
+  applyFilter() {
+
+    const value = this.search.toLowerCase().trim();
+    console.log('value : ', value);
+    // this.filteredRoles = this.roles.filter(row =>
+    //   Object.values(row).some(v =>
+    //     String(v).toLowerCase().includes(value)
+    //   )
+    // );
+
+    this.currentPage = 1;            // 🔴 reset page on filter
     this.updatePagination();
+  }
+
+
+  getAllPermissions() {
+    this.role.getPermissionsByGrouped().subscribe((res: any) => {
+      console.log('res : ', res);
+      if (res.status === 200) {
+        this.modules = res.data;
+        console.log('modules : ', this.modules);
+      }
+    })
   }
 
   updatePagination() {
@@ -98,29 +115,117 @@ export class RolesComponent {
 
   //#region new / update permission
 
-  get sortedInterests(): string[] {
-    return [...this.interests].sort((a, b) => {
-      const aSelected = this.selectedItems.includes(a);
-      const bSelected = this.selectedItems.includes(b);
-      if (aSelected && !bSelected) return -1;
-      if (!aSelected && bSelected) return 1;
-      return 0;
-    });
+  closeModal() {
+    this.showModal = false;
   }
 
-  toggleChip(interest: string): void {
-    const index = this.selectedItems.indexOf(interest);
+  getSortedPermissions(modulePermissions: string[]): any[] {
+    return sortBySelection(modulePermissions, this.selectedItems);
+  }
+
+  getSelectedCount(modulePermissions: string[]): number {
+    return countSelectedInModule(modulePermissions, this.selectedItems);
+  }
+
+  toggleChip(permission: any): void {
+    const index = this.selectedItems.indexOf(permission);
     if (index > -1) {
       this.selectedItems.splice(index, 1);
+      this.roleForm.permissions.splice(index, 1);
     } else {
-      this.selectedItems.push(interest);
+      this.selectedItems.push(permission);
+      this.roleForm.permissions.push(permission.key);
     }
   }
 
-  isSelected(interest: string): boolean {
-    return this.selectedItems.includes(interest);
+  isSelected(permission: string): boolean {
+    return this.selectedItems.includes(permission);
+  }
+
+  process() {
+    if (!this.roleForm.name)
+      return this.toastService.error('Please enter name');
+    else if (!this.roleForm.key)
+      return this.toastService.error('Please enter Role');
+    else if (!this.helperService.validateCase(this.roleForm.key))
+      return this.toastService.error('Role name must be uppercase');
+    else if (this.roleForm.key.length < 3)
+      return this.toastService.error('Role should be minimum 3 characters');
+    else if (!this.roleForm.permissions.length)
+      return this.toastService.error('Please select at least one permission');
+    this.isModalForUpdate ? this.updateRole() : this.createRole();
+  }
+
+  createRole() {
+    // add created by
+    this.roleForm.createdBy = this.userData._id;
+    this.role.createRole(this.roleForm).subscribe((res: any) => {
+      if (res.status === 201) {
+        this.toastService.success(res.message);
+        this.closeModal();
+        this.clearForm();
+        this.getAllRoles();
+      }
+      else
+        this.toastService.info(res.message);
+    }, err => {
+      console.log('err : ', err);
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  updateRole() {
+    this.role.updateRole(this.roleForm).subscribe((res: any) => {
+      console.log('res : ', res);
+      if (res.status === 201) {
+        this.toastService.success(res.message);
+        this.closeModal();
+        this.clearForm();
+        this.getAllRoles();
+      }
+      else {
+        this.toastService.info(res.message);
+      }
+    }, err => {
+      console.log('err : ', err);
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  clearForm() {
+    this.roleForm = {
+      name: '',
+      description: '',
+      key: '',
+      permissions: []
+    };
+    this.selectedItems = [];
   }
 
   //#endregion
 
+}
+
+function sortBySelection(
+  items: string[],
+  selectedItems: string[]
+): string[] {
+  const selectedSet = new Set(selectedItems);
+
+  return [...items].sort((a, b) => {
+    const aSelected = selectedSet.has(a);
+    const bSelected = selectedSet.has(b);
+
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return 0;
+  });
+}
+
+function countSelectedInModule(
+  moduleItems: string[],
+  selectedItems: string[]
+): number {
+  const selectedSet = new Set(selectedItems);
+  return moduleItems.filter(item => selectedSet.has(item)).length;
 }

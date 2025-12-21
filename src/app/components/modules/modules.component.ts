@@ -1,5 +1,8 @@
+import { RolesAPIService } from './../../apis/roles.service';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective } from '@coreui/angular';
+import { HelperService } from '../../services/helper.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-modules',
@@ -12,31 +15,31 @@ import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, Pa
 export class ModulesComponent {
 
   modules: any[] = [
-    {
-      "_id": "DASHBOARD",
-      "label": "Dashboard",
-      "totalPages": 1,
-    },
-    {
-      "_id": "USERS",
-      "label": "User Management",
-      "totalPages": 2
-    },
-    {
-      "_id": "ROLES",
-      "label": "Role Management",
-      "totalPages": 1
-    },
-    {
-      "_id": "CONTACTS",
-      "label": "Contacts",
-      "totalPages": 1
-    },
-    {
-      "_id": "SETTINGS",
-      "label": "Settings",
-      "totalPages": 1
-    }
+    // {
+    //   "_id": "DASHBOARD",
+    //   "label": "Dashboard",
+    //   "totalPages": 1,
+    // },
+    // {
+    //   "_id": "USERS",
+    //   "label": "User Management",
+    //   "totalPages": 2
+    // },
+    // {
+    //   "_id": "ROLES",
+    //   "label": "Role Management",
+    //   "totalPages": 1
+    // },
+    // {
+    //   "_id": "CONTACTS",
+    //   "label": "Contacts",
+    //   "totalPages": 1
+    // },
+    // {
+    //   "_id": "SETTINGS",
+    //   "label": "Settings",
+    //   "totalPages": 1
+    // }
   ]
   paginatedData: any[] = [];
   currentPage = 1;
@@ -46,8 +49,30 @@ export class ModulesComponent {
   // new / update permission
   isModalForUpdate = false;
 
+  constructor(
+    private rolesAPIService: RolesAPIService,
+    private helperService: HelperService,
+    private toastService: ToastService
+  ) { }
+
   ngOnInit() {
-    this.prepareModules();
+    this.getModules()
+  }
+
+  getModules() {
+    this.rolesAPIService.getModules().subscribe((res: any) => {
+      console.log('res : ', res);
+      if (res.status === 200) {
+        this.modules = res.data;
+        this.prepareModules();
+      }
+      else {
+        this.toastService.error(res.message);
+        this.modules = [];
+      }
+    }, err => {
+      console.log('err : ', err);
+    })
   }
 
   prepareModules() {

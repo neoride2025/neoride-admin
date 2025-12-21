@@ -45,7 +45,7 @@ export class AuthAPIService {
 
     // auth related API's
     login(body: any) {
-        return this.httpClient.post(this.authUrl + 'login', body);
+        return this.httpClient.post(this.authUrl + 'login', body, { withCredentials: true });
     }
 
     logout(userId?: any) {

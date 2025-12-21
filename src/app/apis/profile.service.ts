@@ -5,18 +5,18 @@ import { environment } from '../../environments/environment';
 @Injectable({
     providedIn: 'root'
 })
-export class ContactAPIService {
+export class ProfileAPIService {
 
-    authUrl = '';
+    adminUrl = '';
 
     constructor(
         private httpClient: HttpClient
     ) {
-        this.authUrl = environment.apiURL + 'admin/';
+        this.adminUrl = environment.apiURL + 'admin/';
     }
 
-    getContacts() {
-        return this.httpClient.get(this.authUrl + 'contact');
+    getProfileDetails() {
+        return this.httpClient.post(this.adminUrl + 'me', {});
     }
 
 

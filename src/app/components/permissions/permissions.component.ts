@@ -1,5 +1,8 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalTitleDirective, ModalComponent, ModalHeaderComponent, ModalBodyComponent, ModalFooterComponent, FormCheckLabelDirective, FormLabelDirective, FormDirective, FormControlDirective, FormSelectDirective } from '@coreui/angular';
+import { RolesAPIService } from '../../apis/roles.service';
+import { HelperService } from '../../services/helper.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-permissions',
@@ -89,8 +92,30 @@ export class PermissionsComponent {
   // new / update permission
   isModalForUpdate = false;
 
+  constructor(
+    private rolesAPIService: RolesAPIService,
+    private helperService: HelperService,
+    private toastService: ToastService
+  ) { }
+
   ngOnInit() {
-    this.preparePermissions();
+    this.getPermission()
+  }
+
+  getPermission() {
+    this.rolesAPIService.getPermissions().subscribe((res: any) => {
+      console.log('res : ', res);
+      if (res.status === 200) {
+        this.permissions = res.data;
+        this.preparePermissions();
+      }
+      else {
+        this.toastService.error(res.message);
+        this.permissions = [];
+      }
+    }, err => {
+      console.log('err : ', err);
+    })
   }
 
   preparePermissions() {

@@ -4,13 +4,15 @@
 :root {
   --cui-primary: #{$primary};
   --cui-primary-text: #{$primary-text-emphasis};
-  --cui-secondary: #{$secondary};
   --cui-success: #{$success};
   --cui-info: #{$info};
   --cui-warning: #{$warning};
   --cui-danger: #{$danger};
   --cui-light: #{$light};
   --cui-dark: #{$dark};
+
+  // additional colors
+  --cui-accent: #{$accent};
 
   --font-12: #{$font12};
   --font-14: #{$font14};

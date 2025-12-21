@@ -1,0 +1,104 @@
+<div class="flex-space mb-3">
+  <h5 class="">moderators</h5>
+  <div class="flex-space">
+    <!-- <input cFormControl class="w-60" placeholder="Search..." [(ngModel)]="search" (input)="applyFilter()" /> -->
+    <button class="float-end" cButton color="primary" [cModalToggle]="moderatorModal.id">Add Moderator</button>
+  </div>
+</div>
+<table cTable responsive>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Created By</th>
+      <th>Total Permissions</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (moderator of paginatedData; track $index) {
+    <tr>
+      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
+      <td>{{ moderator.name }}</td>
+      <td>{{ moderator.createdBy.name }}</td>
+      <td>{{ moderator.permissions.length }}</td>
+      <td>
+        <c-form-check [switch]="true">
+          <input cFormCheckInput checked type="checkbox" />
+          <label cFormCheckLabel>Checked switch checkbox input</label>
+        </c-form-check>
+      </td>
+      <td class="d-flex gap-4">
+        <button cButton color="danger" size="sm" [disabled]="moderator.isSystemUser">Delete</button>
+        <button cButton color="info" size="sm">Update</button>
+        <button cButton color="primary" size="sm" [disabled]="moderator.isSystemUser">Activate</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>
+
+<c-pagination align="center">
+  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
+    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
+  </li>
+  @for (_ of pagesArray; track $index) {
+  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
+    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
+  </li>
+  }
+  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
+    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
+  </li>
+</c-pagination>
+
+<c-modal #moderatorModal backdrop="static" alignment="center" id="moderatorModal" [(visible)]="showModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Moderator</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <div class="mb-2">
+        <label cLabel for="moderatorName">Name</label>
+        <input cFormControl id="moderatorName" name="moderatorName" type="text" [(ngModel)]="moderatorForm.name" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moderatorEmail">Email Address</label>
+        <input cFormControl id="moderatorEmail" name="moderatorName" type="email" [(ngModel)]="moderatorForm.email" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moderatorMobile">Mobile Number</label>
+        <input
+          cFormControl
+          id="moderatorMobile"
+          name="moderatorName"
+          type="number"
+          [(ngModel)]="moderatorForm.mobile"
+        />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moderatorMobile">Role</label>
+        <select cSelect id="moderatorMobile">
+          <option value="1">One</option>
+          <option value="2">Two</option>
+          <option value="3">Three</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moderatorDescription">Description</label>
+        <textarea
+          cFormControl
+          id="moderatorDescription"
+          name="moderatorDescription"
+          rows="6"
+          [(ngModel)]="moderatorForm.description"
+        ></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button [cModalToggle]="moderatorModal.id" cButton color="secondary">Close</button>
+    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Create" }}</button>
+  </c-modal-footer>
+</c-modal>

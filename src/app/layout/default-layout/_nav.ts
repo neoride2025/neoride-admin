@@ -15,13 +15,13 @@ export const navItems: INavData[] = [
     iconComponent: { name: 'cil-people' }
   },
   {
-    name: 'Roles',
-    url: '/roles',
+    name: 'Moderators',
+    url: '/moderators',
     iconComponent: { name: 'cil-user' }
   },
   {
-    name: 'Modules & Permissions',
-    url: '/modules',
+    name: 'Roles',
+    url: '/roles',
     iconComponent: { name: 'cil-pen' }
   },
   // {

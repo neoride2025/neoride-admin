@@ -11,6 +11,8 @@ export class HelperService {
   config = new Config();
   mobilePattern = /^[6-9][0-9]{9}$/;
   emailPattern: any = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
+  passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  casePattern = /^[A-Z]+(_[A-Z]+)*$/;
 
   constructor(
     private router: Router,
@@ -53,6 +55,16 @@ export class HelperService {
     if (!mobile || mobile.length < 10)
       return false;
     else if (!this.mobilePattern.test(mobile)) // it should contain only numbers
+      return false;
+    else
+      return true;
+  }
+
+  // function to validate the key (only camel case)
+  validateCase(key: string) {
+    if (!key)
+      return false;
+    else if (!this.casePattern.test(key))
       return false;
     else
       return true;

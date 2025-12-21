@@ -19,9 +19,8 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) {
 
     // ✅ Only intercept API calls
-    if (!req.url.startsWith(environment.apiURL)) {
+    if (!req.url.startsWith(environment.apiURL))
       return next.handle(req);
-    }
 
     const accessToken = this.auth.getAccessToken() || sessionStorage.getItem('accessToken');
 
@@ -29,7 +28,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError(err => {
-
         // check condition to skip refreshing
         if (!this.shouldRefreshToken(req, err)) {
           return throwError(() => err);
@@ -47,7 +45,7 @@ export class AuthInterceptor implements HttpInterceptor {
               this.refreshSubject.next(res.accessToken);
 
               return next.handle(
-                req.clone({
+                authReq.clone({
                   setHeaders: {
                     Authorization: `Bearer ${res.accessToken}`
                   }
@@ -81,7 +79,6 @@ export class AuthInterceptor implements HttpInterceptor {
   private shouldRefreshToken(req: HttpRequest<any>, err: any): boolean {
     return (
       err.status === 401 &&
-      err.error?.error === 'ACCESS_TOKEN_EXPIRED' &&
       !req.url.includes('/auth/login') &&
       !req.url.includes('/auth/register') &&
       !req.url.includes('/auth/refresh-token')

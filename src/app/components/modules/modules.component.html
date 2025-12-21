@@ -16,12 +16,14 @@
     @for (module of paginatedData; track $index) {
     <tr>
       <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
-      <td>{{ module.label }}</td>
+      <td>{{ module.name }}</td>
       <td>{{ module.totalPages }}</td>
       <td class="d-flex gap-4">
         <button cButton color="danger" size="sm">Delete</button>
         <button cButton color="info" size="sm">Update</button>
-        <button cButton color="primary" size="sm">Activate</button>
+        <button cButton [color]="!module.isActive ? 'success' : 'danger'" size="sm">
+          {{ module.isActive ? "Deactivate" : "Activate" }}
+        </button>
       </td>
     </tr>
     }
@@ -52,7 +54,7 @@
         <label cLabel for="moduleName">Name</label>
         <input cFormControl id="moduleName" type="text" />
       </div>
-         <div class="mb-2">
+      <div class="mb-2">
         <label cLabel for="modulePageCount">Total Pages</label>
         <input cFormControl id="modulePageCount" type="number" />
       </div>

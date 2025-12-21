@@ -31,23 +31,32 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'moderators',
+        loadComponent: () => import('./pages/moderators/moderators.component').then(m => m.ModeratorsComponent),
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['ROLES_MANAGE'],
+          isFallback: true
+        }
+      },
+      {
         path: 'roles',
         loadComponent: () => import('./pages/roles/roles.component').then(m => m.RolesComponent),
         canActivate: [permissionGuard],
         data: {
-          permissions: ['ROLES_VIEW'],
+          permissions: ['PERMISSIONS_MANAGE'],
           isFallback: true
         }
       },
-       {
-        path: 'modules',
-        loadComponent: () => import('./pages/modules-and-permissions/modules-and-permissions.component').then(m => m.ModulesAndPermissionsComponent),
-        canActivate: [permissionGuard],
-        data: {
-          permissions: ['PERMISSIONS_VIEW'],
-          isFallback: true
-        }
-      },
+      // {
+      //   path: 'modules',
+      //   loadComponent: () => import('./pages/modules-and-permissions/modules-and-permissions.component').then(m => m.ModulesAndPermissionsComponent),
+      //   canActivate: [permissionGuard],
+      //   data: {
+      //     permissions: ['PERMISSIONS_MANAGE'],
+      //     isFallback: true
+      //   }
+      // },
     ]
   },
   {

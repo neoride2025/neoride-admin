@@ -13,6 +13,7 @@ export const permissionGuard: CanActivateFn = (
   const toastService = inject(ToastService);
   const required = route.data['permissions'] as string[] | undefined;
   const userPerms = auth.getUserPermissions() || [];
+  console.log('user perms : ', userPerms);
 
   if (auth.isAdmin()) return true;
 
@@ -32,8 +33,9 @@ export const permissionGuard: CanActivateFn = (
 function getFirstAllowedRoute(permissions: string[], toastService: ToastService): string | null {
   for (const p of permissions) {
     const route = PERMISSION_ROUTE_MAP[p];
+    console.log('route : ', route);
     if (route) return route;
   }
-  // toastService.info('You are not allowed to access this page');
+  toastService.info('You are not allowed to access this page');
   return null;
 }

@@ -38,6 +38,10 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+textarea {
+  resize: none;
+}
+
 .pointer {
   cursor: pointer !important;
 }
