@@ -1,39 +1,70 @@
-<c-row class="flex-space">
+@if (loading || submitting) {
+<app-loader [message]="loaderMessage"></app-loader>
+} @if(!loading) {
+<div class="flex-space">
   <h5 class="">Permissions</h5>
-  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="permissionModal.id">
-    Add Permission
-  </button>
-</c-row>
-
+  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="permissionModal.id">Add Permission</button>
+</div>
 <table cTable responsive>
   <thead>
     <tr>
       <th>#</th>
       <th>Label</th>
+      <th>Key</th>
       <th>Module</th>
-      <th>Description</th>
+      <th>Created By</th>
+      <th>Created On</th>
+      <th>Status</th>
       <th>Action</th>
     </tr>
   </thead>
-
+  @if(paginatedData.length > 0) {
   <tbody>
     @for (permission of paginatedData; track $index) {
     <tr>
       <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
       <td>{{ permission.label }}</td>
-      <td>{{ permission.module }}</td>
-      <td>{{ permission.description }}</td>
+      <td>{{ permission.key }}</td>
+      <td>{{ permission.module?.name }}</td>
+      <td>
+        {{ permission.createdBy?.name }}
+        @if (permission.createdBy?.role) {
+          <span><c-badge color="primary">{{ permission.createdBy?.role.name }}</c-badge></span>
+        }
+      </td>
+      <td>
+        <span>{{ permission.createdAt | date : "mediumDate" }} </span>
+        <span>{{ permission.createdAt | date : "shortTime" }}</span>
+      </td>
+      <td>
+        <c-form-check [switch]="true" sizing="lg">
+          <input
+            cFormCheckInput
+            [checked]="permission.isActive"
+            type="checkbox"
+            [disabled]="permission.isSystemRole"
+            (change)="onCheckboxChange(module)"
+          />
+        </c-form-check>
+      </td>
       <td class="d-flex gap-4">
         <button cButton color="danger" size="sm">Delete</button>
         <button cButton color="info" size="sm">Update</button>
-        <button cButton color="primary" size="sm">Activate</button>
       </td>
     </tr>
     }
   </tbody>
+  } @if (paginatedData.length === 0) {
+  <tbody>
+    <tr>
+      <td colspan="100%" class="text-center py-4">No Permissions found</td>
+    </tr>
+  </tbody>
+  }
 </table>
+}
 
-<c-pagination align="end">
+<c-pagination align="start">
   <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
     <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
   </li>
@@ -47,7 +78,7 @@
   </li>
 </c-pagination>
 
-<c-modal #permissionModal backdrop="static" alignment="center" id="permissionModal">
+<c-modal #permissionModal backdrop="static" alignment="center" id="permissionModal" [(visible)]="showModal">
   <c-modal-header>
     <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Permission</h5>
   </c-modal-header>
@@ -55,25 +86,27 @@
     <form cForm>
       <div class="mb-2">
         <label cLabel for="inputLabel-1">Module</label>
-        <select aria-label="Default select example" cSelect>
+        <select aria-label="Default select example" cSelect name="permissionModule" [(ngModel)]="permissionForm.module">
           <option>Select Module</option>
-          <option value="1">One</option>
-          <option value="2">Two</option>
-          <option value="3">Three</option>
+          @for (module of modules(); track module) {
+          <option [value]="module._id">{{ module.name }}</option>
+          }
         </select>
       </div>
       <div class="mb-2">
         <label cLabel for="permissionLabel">Label</label>
-        <input cFormControl id="permissionLabel" type="text" />
-      </div>
-      <div class="mb-2">
-        <label cLabel for="permissionValue">Value</label>
-        <input cFormControl id="permissionValue" type="text" />
+        <input
+          cFormControl
+          id="permissionLabel"
+          type="text"
+          name="permissionLabel"
+          [(ngModel)]="permissionForm.label"
+        />
       </div>
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button [cModalToggle]="permissionModal.id" cButton color="secondary">Close</button>
-    <button cButton color="primary">{{ isModalForUpdate ? "Update" : "Add" }}</button>
+    <button (click)="closeModal(true)" cButton color="secondary">Close</button>
+    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Add" }}</button>
   </c-modal-footer>
 </c-modal>

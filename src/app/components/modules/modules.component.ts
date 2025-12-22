@@ -1,77 +1,77 @@
-import { RolesAPIService } from './../../apis/roles.service';
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective } from '@coreui/angular';
+import { SharedModule } from './../../others/shared.module';
+import { LoaderComponent } from './../../global-components/loader/loader.component';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
+import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, BadgeComponent } from '@coreui/angular';
 import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
+import { ModuleAPIService } from '../../apis/module.service';
+import { DatePipe } from '@angular/common';
+import { ModuleState } from '../../../signals/module-state';
 
 @Component({
   selector: 'app-modules',
-  imports: [TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective],
+  imports: [SharedModule, LoaderComponent, TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, BadgeComponent, ModalToggleDirective, ModalToggleDirective, ModalComponent,
+    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormCheckComponent, FormCheckInputDirective, FormDirective, FormLabelDirective, DatePipe],
   templateUrl: './modules.component.html',
   styleUrl: './modules.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ModulesComponent {
 
-  modules: any[] = [
-    // {
-    //   "_id": "DASHBOARD",
-    //   "label": "Dashboard",
-    //   "totalPages": 1,
-    // },
-    // {
-    //   "_id": "USERS",
-    //   "label": "User Management",
-    //   "totalPages": 2
-    // },
-    // {
-    //   "_id": "ROLES",
-    //   "label": "Role Management",
-    //   "totalPages": 1
-    // },
-    // {
-    //   "_id": "CONTACTS",
-    //   "label": "Contacts",
-    //   "totalPages": 1
-    // },
-    // {
-    //   "_id": "SETTINGS",
-    //   "label": "Settings",
-    //   "totalPages": 1
-    // }
-  ]
+  // injectable dependencies
+  helperService = inject(HelperService);
+  toastService = inject(ToastService);
+  module = inject(ModuleAPIService);
+  moduleState = inject(ModuleState)
+
+  // common things
+  config: any = this.helperService.config;
+  userInfo: any = this.helperService.getDataFromSession('userInfo');
+  loading = false;
+  loaderMessage = '';
+
+  // table & list
+  modules: any[] = [];
   paginatedData: any[] = [];
   currentPage = 1;
   pageSize = 5;
   totalPages = 0;
 
   // new / update permission
+  @ViewChild('moduleModal') moduleModal!: any;
+  showModal = false;
+  submitting = false;
   isModalForUpdate = false;
-
-  constructor(
-    private rolesAPIService: RolesAPIService,
-    private helperService: HelperService,
-    private toastService: ToastService
-  ) { }
+  moduleForm = {
+    name: '',
+    key: '',
+    description: '',
+    isSystemModule: false
+  }
 
   ngOnInit() {
-    this.getModules()
+    this.getModules();
+    this.helperService.closeModalIfOpened(() => {
+      this.closeModal(true);
+    });
   }
 
   getModules() {
-    this.rolesAPIService.getModules().subscribe((res: any) => {
-      console.log('res : ', res);
+    this.modules = [];
+    this.loading = true;
+    this.loaderMessage = 'Loading modules...';
+    this.module.getAllModules().subscribe((res: any) => {
+      this.loading = false;
       if (res.status === 200) {
         this.modules = res.data;
+        this.moduleState.setModule(this.modules);
         this.prepareModules();
       }
-      else {
+      else
         this.toastService.error(res.message);
-        this.modules = [];
-      }
     }, err => {
-      console.log('err : ', err);
+      this.loading = false;
+      this.toastService.error(err.error.message);
     })
   }
 
@@ -95,5 +95,70 @@ export class ModulesComponent {
   get pagesArray() {
     return Array.from({ length: this.totalPages });
   }
+
+  //#region Table action functions
+
+  onCheckboxChange(module: any) {
+    module.isActive = !module.isActive;
+  }
+
+  //#endregion
+
+  //#region new / update module
+
+  process() {
+    this.isModalForUpdate ? this.updateModule() : this.createModule();
+  }
+
+  createModule() {
+    const key = this.helperService.toCapsWithUnderscore(this.moduleForm.name);
+    this.moduleForm.key = key;
+    if (!this.moduleForm.name)
+      return this.toastService.error('Please enter name');
+    else if (this.moduleForm.name.length < this.config.nameMinLength)
+      return this.toastService.error('Name should be minimum 3 characters');
+    this.submitting = true;
+    this.loaderMessage = 'Creating module...';
+    this.module.createModule(this.moduleForm).subscribe((res: any) => {
+      this.submitting = false;
+      if (res.status === 201) {
+        this.toastService.success(res.message);
+        this.closeModal(true);
+        this.pushNewModuleToList(res.data);
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      console.log('err : ', err);
+      this.submitting = false;
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  // will push the recently created module to the list without call the API
+  pushNewModuleToList(module: any) {
+    this.modules.push(module); // this will add the new module to the list also send through signal
+    this.prepareModules();
+  }
+
+  updateModule() {
+
+  }
+
+  clearForm() {
+    this.moduleForm = {
+      name: '',
+      description: '',
+      key: '',
+      isSystemModule: false
+    };
+  }
+
+  closeModal(clearForm?: boolean) {
+    clearForm ? this.clearForm() : '';
+    this.showModal = false;
+  }
+
+  //#endregion
 
 }

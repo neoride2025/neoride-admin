@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
     providedIn: 'root'
 })
-export class ModeratorsAPIService {
+export class ModeratorAPIService {
 
     authUrl = '';
 
@@ -23,7 +23,7 @@ export class ModeratorsAPIService {
         return this.httpClient.put(this.authUrl + 'update-moderator', moderator);
     }
 
-    getAllModerators() {
+    getModerators() {
         return this.httpClient.get(this.authUrl + 'moderators');
     }
 

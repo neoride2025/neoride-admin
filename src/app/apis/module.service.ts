@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
     providedIn: 'root'
 })
-export class RolesAPIService {
+export class ModuleAPIService {
 
     authUrl = '';
 
@@ -15,16 +15,16 @@ export class RolesAPIService {
         this.authUrl = environment.apiURL + 'admin/';
     }
 
-    createRole(role: any) {
-        return this.httpClient.post(this.authUrl + 'create-role', role);
+    createModule(module: any) {
+        return this.httpClient.post(this.authUrl + 'create-module', module);
     }
 
-    updateRole(role: any) {
-        return this.httpClient.put(this.authUrl + 'update-role', role);
+    updateModule(module: any) {
+        return this.httpClient.put(this.authUrl + 'update-role', module);
     }
 
-    getAllRoles() {
-        return this.httpClient.get(this.authUrl + 'roles');
+    getAllModules() {
+        return this.httpClient.get(this.authUrl + 'modules');
     }
 
     getPermissionsByGrouped() {

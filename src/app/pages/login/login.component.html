@@ -1,6 +1,6 @@
 <div class="bg-light dark:bg-transparent min-vh-100 d-flex flex-row align-items-center">
-  @if (showLoader) {
-  <app-loader></app-loader>
+  @if (loading) {
+  <app-loader [message]="loaderMessage"></app-loader>
   }
   <c-container breakpoint="md">
     <c-row class="justify-content-center">

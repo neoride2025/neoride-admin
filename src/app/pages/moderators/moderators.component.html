@@ -1,5 +1,5 @@
 <div class="flex-space mb-3">
-  <h5 class="">moderators</h5>
+  <h5 class="">Moderators</h5>
   <div class="flex-space">
     <!-- <input cFormControl class="w-60" placeholder="Search..." [(ngModel)]="search" (input)="applyFilter()" /> -->
     <button class="float-end" cButton color="primary" [cModalToggle]="moderatorModal.id">Add Moderator</button>
@@ -10,8 +10,11 @@
     <tr>
       <th>#</th>
       <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
       <th>Created By</th>
-      <th>Total Permissions</th>
+      <th>Created On</th>
+      <th>Status</th>
       <th>Action</th>
     </tr>
   </thead>
@@ -21,18 +24,26 @@
     <tr>
       <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
       <td>{{ moderator.name }}</td>
-      <td>{{ moderator.createdBy.name }}</td>
-      <td>{{ moderator.permissions.length }}</td>
+      <td>{{ moderator.email }}</td>
+      <td>{{ moderator.role?.name }}</td>
+      <td>
+        {{ moderator.createdBy?.name || '-' }}
+        @if (moderator.createdBy?.name) {
+         <span><c-badge color="primary">{{ moderator.createdBy?.role.name }}</c-badge></span>
+        }
+      </td>
+      <td>
+        <span>{{ moderator.createdAt | date : "mediumDate" }} </span>
+        <span>{{ moderator.createdAt | date : "shortTime" }}</span>
+      </td>
       <td>
         <c-form-check [switch]="true">
-          <input cFormCheckInput checked type="checkbox" />
-          <label cFormCheckLabel>Checked switch checkbox input</label>
+          <input cFormCheckInput [checked]="moderator.isActive" [disabled]="moderator.isSystemUser" type="checkbox" (change)="onCheckboxChange($event)" />
         </c-form-check>
       </td>
       <td class="d-flex gap-4">
         <button cButton color="danger" size="sm" [disabled]="moderator.isSystemUser">Delete</button>
         <button cButton color="info" size="sm">Update</button>
-        <button cButton color="primary" size="sm" [disabled]="moderator.isSystemUser">Activate</button>
       </td>
     </tr>
     }
@@ -65,25 +76,48 @@
       </div>
       <div class="mb-2">
         <label cLabel for="moderatorEmail">Email Address</label>
-        <input cFormControl id="moderatorEmail" name="moderatorName" type="email" [(ngModel)]="moderatorForm.email" />
+        <input cFormControl id="moderatorEmail" name="moderatorEmail" type="email" [(ngModel)]="moderatorForm.email" />
       </div>
       <div class="mb-2">
         <label cLabel for="moderatorMobile">Mobile Number</label>
         <input
           cFormControl
           id="moderatorMobile"
-          name="moderatorName"
+          name="moderatorMobile"
           type="number"
           [(ngModel)]="moderatorForm.mobile"
         />
       </div>
       <div class="mb-2">
-        <label cLabel for="moderatorMobile">Role</label>
-        <select cSelect id="moderatorMobile">
-          <option value="1">One</option>
-          <option value="2">Two</option>
-          <option value="3">Three</option>
+        <label cLabel for="moderatorPassword">Password</label>
+        <input
+          cFormControl
+          id="moderatorPassword"
+          name="moderatorPassword"
+          type="text"
+          [(ngModel)]="moderatorForm.password"
+        />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moderatorRole">Role</label>
+        <select cSelect id="moderatorRole" name="moderatorRole" [(ngModel)]="moderatorForm.role">
+          <option>Select Role</option>
+          @for(role of roles; track role) {
+          <option [value]="role._id">{{ role.name }}</option>
+          }
         </select>
+      </div>
+      <div class="mb-2">
+        <c-form-check class="d-flex gap-2">
+          <input
+            cFormCheckInput
+            id="systemUser"
+            name="systemUser"
+            type="checkbox"
+            [(ngModel)]="moderatorForm.isSystemUser"
+          />
+          <label cFormCheckLabel for="systemUser">Keep this as System Moderator</label>
+        </c-form-check>
       </div>
       <div class="mb-2">
         <label cLabel for="moderatorDescription">Description</label>

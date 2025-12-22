@@ -22,7 +22,12 @@ export const navItems: INavData[] = [
   {
     name: 'Roles',
     url: '/roles',
-    iconComponent: { name: 'cil-pen' }
+    iconComponent: { name: 'cil-https' }
+  },
+    {
+    name: 'Modules & Permissions',
+    url: '/modules',
+    iconComponent: { name: 'cil-columns' }
   },
   // {
   //   title: true,

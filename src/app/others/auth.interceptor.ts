@@ -1,9 +1,19 @@
-import { AuthAPIService } from '../apis/auth.service';
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, } from '@angular/common/http';
-import { catchError, filter, switchMap, take } from 'rxjs/operators';
-import { throwError, BehaviorSubject, EMPTY } from 'rxjs';
-import { HttpRequest, HttpHandler } from '@angular/common/http';
+import {
+  HttpInterceptor,
+  HttpRequest,
+  HttpHandler,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { BehaviorSubject, throwError } from 'rxjs';
+import {
+  catchError,
+  filter,
+  switchMap,
+  take,
+  finalize
+} from 'rxjs/operators';
+import { AuthAPIService } from '../apis/auth.service';
 import { environment } from '../../environments/environment';
 
 @Injectable()
@@ -12,55 +22,58 @@ export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
   private refreshSubject = new BehaviorSubject<string | null>(null);
 
-  constructor(
-    private auth: AuthAPIService,
-  ) { }
+  constructor(private auth: AuthAPIService) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
 
-    // ✅ Only intercept API calls
-    if (!req.url.startsWith(environment.apiURL))
+    // Ignore non-API calls
+    if (!req.url.startsWith(environment.apiURL)) {
       return next.handle(req);
+    }
 
-    const accessToken = this.auth.getAccessToken() || sessionStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken'); //  single source of truth
 
-    const authReq = accessToken ? req.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } }) : req;
+    const authReq = token
+      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : req;
 
     return next.handle(authReq).pipe(
-      catchError(err => {
-        // check condition to skip refreshing
+      catchError((err: HttpErrorResponse) => {
+
         if (!this.shouldRefreshToken(req, err)) {
           return throwError(() => err);
         }
 
-        // 🔄 refresh flow
+        // 🔄 First request triggers refresh
         if (!this.isRefreshing) {
           this.isRefreshing = true;
           this.refreshSubject.next(null);
 
           return this.auth.refreshToken().pipe(
             switchMap((res: any) => {
-              this.isRefreshing = false;
-              this.auth.setAccessToken(res.accessToken);
-              this.refreshSubject.next(res.accessToken);
+              const newToken = res.accessToken;
+
+              this.auth.setAccessToken(newToken);
+              this.refreshSubject.next(newToken);
 
               return next.handle(
-                authReq.clone({
-                  setHeaders: {
-                    Authorization: `Bearer ${res.accessToken}`
-                  }
+                req.clone({
+                  setHeaders: { Authorization: `Bearer ${newToken}` }
                 })
               );
             }),
-            catchError(() => {
-              this.isRefreshing = false;
+            catchError((refreshErr) => {
+              this.refreshSubject.error(refreshErr);
               this.auth.logout();
-              return EMPTY;
+              return throwError(() => refreshErr);
+            }),
+            finalize(() => {
+              this.isRefreshing = false;
             })
           );
         }
 
-        // 🟡 wait for refresh in progress
+        //  Requests wait here until refresh finishes
         return this.refreshSubject.pipe(
           filter(token => token !== null),
           take(1),
@@ -76,7 +89,7 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private shouldRefreshToken(req: HttpRequest<any>, err: any): boolean {
+  private shouldRefreshToken(req: HttpRequest<any>, err: HttpErrorResponse): boolean {
     return (
       err.status === 401 &&
       !req.url.includes('/auth/login') &&
@@ -84,5 +97,4 @@ export class AuthInterceptor implements HttpInterceptor {
       !req.url.includes('/auth/refresh-token')
     );
   }
-
 }

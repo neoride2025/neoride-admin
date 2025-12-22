@@ -59,5 +59,10 @@ export class Config {
       }
     }
   };
+  nameMinLength = 3;
+  nameMaxLength = 20;
+  passwordMinLength = 6;
+  passwordMaxLength = 18;
+  descriptionMaxLength = 200;
 
 }

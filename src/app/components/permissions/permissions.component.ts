@@ -1,120 +1,85 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalTitleDirective, ModalComponent, ModalHeaderComponent, ModalBodyComponent, ModalFooterComponent, FormCheckLabelDirective, FormLabelDirective, FormDirective, FormControlDirective, FormSelectDirective } from '@coreui/angular';
-import { RolesAPIService } from '../../apis/roles.service';
+import { SharedModule } from './../../others/shared.module';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
+import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalTitleDirective, ModalComponent, ModalHeaderComponent, ModalBodyComponent, ModalFooterComponent, FormCheckLabelDirective, FormLabelDirective, FormDirective, FormControlDirective, FormSelectDirective, FormCheckComponent, FormCheckInputDirective, BadgeComponent } from '@coreui/angular';
 import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
+import { PermissionAPIService } from '../../apis/permission.service';
+import { ModuleAPIService } from '../../apis/module.service';
+import { ModuleState } from '../../../signals/module-state';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-permissions',
-  imports: [TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective],
+  imports: [SharedModule, TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,BadgeComponent,
+    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormCheckComponent, FormCheckInputDirective, FormDirective, FormSelectDirective, FormLabelDirective, DatePipe],
   templateUrl: './permissions.component.html',
   styleUrl: './permissions.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class PermissionsComponent {
 
-  // array holding the values
-  permissions: any[] = [
-    {
-      "_id": "DASHBOARD_VIEW",
-      "label": "View Dashboard",
-      "module": "Dashboard",
-      "description": "Allows access to the main dashboard"
-    },
-    {
-      "_id": "USERS_VIEW",
-      "label": "View Users",
-      "module": "User Management",
-      "description": "Allows viewing the user list"
-    },
-    {
-      "_id": "USERS_CREATE",
-      "label": "Create Users",
-      "module": "User Management",
-      "description": "Allows creating new users"
-    },
-    {
-      "_id": "USERS_EDIT",
-      "label": "Edit Users",
-      "module": "User Management",
-      "description": "Allows editing user details"
-    },
-    {
-      "_id": "USERS_DELETE",
-      "label": "Delete Users",
-      "module": "User Management",
-      "description": "Allows deleting users"
-    },
-    {
-      "_id": "ROLES_VIEW",
-      "label": "View Roles & Permissions",
-      "module": "Access Control",
-      "description": "Allows viewing roles and permissions"
-    },
-    {
-      "_id": "ROLES_MANAGE",
-      "label": "Manage Roles & Permissions",
-      "module": "Access Control",
-      "description": "Allows creating and editing roles and permissions"
-    },
-    {
-      "_id": "CONTACTS_VIEW",
-      "label": "View Contacts",
-      "module": "Contacts",
-      "description": "Allows viewing contacts list"
-    },
-    {
-      "_id": "CONTACTS_CREATE",
-      "label": "Create Contacts",
-      "module": "Contacts",
-      "description": "Allows creating new contacts"
-    },
-    {
-      "_id": "CONTACTS_EDIT",
-      "label": "Edit Contacts",
-      "module": "Contacts",
-      "description": "Allows editing contact details"
-    },
-    {
-      "_id": "CONTACTS_DELETE",
-      "label": "Delete Contacts",
-      "module": "Contacts",
-      "description": "Allows deleting contacts"
-    }
-  ];
-  paginatedData: any[] = []; // displaying the data
+  // injectable dependencies
+  helperService = inject(HelperService);
+  toastService = inject(ToastService);
+  permission = inject(PermissionAPIService);
+  module = inject(ModuleAPIService);
+  moduleState = inject(ModuleState)
 
+  // common things
+  config: any = this.helperService.config;
+  userInfo: any = this.helperService.getDataFromSession('userInfo');
+  loading = false;
+  loaderMessage = '';
+
+  // table & list
+  permissions: any[] = [];
+  paginatedData: any[] = [];
   currentPage = 1;
-  pageSize = 5; // total items per page
-  totalPages = 0; // will calculate based on the values length & pageSize
+  pageSize = 10;
+  totalPages = 0;
 
   // new / update permission
+  showModal = false;
+  submitting = false;
   isModalForUpdate = false;
-
-  constructor(
-    private rolesAPIService: RolesAPIService,
-    private helperService: HelperService,
-    private toastService: ToastService
-  ) { }
-
-  ngOnInit() {
-    this.getPermission()
+  modules = this.moduleState.module; // will get modules from modules component through signal
+  permissionForm = {
+    label: '',
+    description: '',
+    isSystemPermission: false,
+    module: ''
   }
 
-  getPermission() {
-    this.rolesAPIService.getPermissions().subscribe((res: any) => {
-      console.log('res : ', res);
+  ngOnInit() {
+    this.getPermissions();
+    this.helperService.closeModalIfOpened(() => {
+      this.closeModal(true);
+    });
+  }
+
+  getModules() {
+    this.module.getAllModules().subscribe((res: any) => {
+      if (res.status === 200) {
+        this.modules = res.data;
+      }
+    })
+  }
+
+  getPermissions() {
+    this.permissions = [];
+    this.loading = true;
+    this.loaderMessage = 'Loading permissions...';
+    this.permission.getAllPermissions().subscribe((res: any) => {
+      this.loading = false;
       if (res.status === 200) {
         this.permissions = res.data;
         this.preparePermissions();
       }
-      else {
+      else
         this.toastService.error(res.message);
-        this.permissions = [];
-      }
     }, err => {
-      console.log('err : ', err);
+      this.loading = false;
+      this.toastService.error(err.error.message);
     })
   }
 
@@ -139,4 +104,66 @@ export class PermissionsComponent {
     return Array.from({ length: this.totalPages });
   }
 
+  //#region Table action functions
+
+  onCheckboxChange(permission: any) {
+    permission.isActive = !permission.isActive;
+  }
+
+  //#endregion
+
+  //#region new / update permission
+
+  process() {
+    this.isModalForUpdate ? this.updatePermission() : this.createPermission();
+  }
+
+  createPermission() {
+    if (!this.permissionForm.label)
+      return this.toastService.error('Please enter permission name');
+    else if (this.permissionForm.label.length < this.config.nameMinLength)
+      return this.toastService.error('Permission name should be minimum 3 characters');
+    this.submitting = true;
+    this.loaderMessage = 'Creating permission...';
+    this.permission.createPermission(this.permissionForm).subscribe((res: any) => {
+      this.submitting = false;
+      if (res.status === 201) {
+        this.toastService.success(res.message);
+        this.closeModal(true);
+        this.pushNewModuleToList(res.data);
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      console.log('err : ', err);
+      this.submitting = false;
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  // will push the recently created permission to the list without call the API
+  pushNewModuleToList(permission: any) {
+    this.permissions.push(permission);
+    this.preparePermissions();
+  }
+
+  updatePermission() {
+
+  }
+
+  clearForm() {
+    this.permissionForm = {
+      label: '',
+      description: '',
+      isSystemPermission: false,
+      module: ''
+    };
+  }
+
+  closeModal(clearForm?: boolean) {
+    clearForm ? this.clearForm() : '';
+    this.showModal = false;
+  }
+
+  //#endregion
 }

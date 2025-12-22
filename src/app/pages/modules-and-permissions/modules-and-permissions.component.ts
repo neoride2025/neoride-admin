@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { ModulesComponent } from 'src/app/components/modules/modules.component';
-import { PermissionsComponent } from 'src/app/components/permissions/permissions.component';
+import { ModulesComponent } from '../../components/modules/modules.component';
+import { PermissionsComponent } from '../../components/permissions/permissions.component';
 
 @Component({
   selector: 'app-modules-and-permissions',
