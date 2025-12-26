@@ -18,7 +18,7 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: {
           title: 'Dashboard',
-          permissions: ['DASHBOARD_VIEW']
+          permissions: ['VIEW_DASHBOARD'],
         }
       },
       {
@@ -26,7 +26,34 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/contacts/contacts.component').then(m => m.ContactsComponent),
         canActivate: [permissionGuard],
         data: {
-          permissions: ['CONTACTS_VIEW'],
+          permissions: ['VIEW_CONTACTS'],
+          isFallback: true
+        }
+      },
+      {
+        path: 'moderators',
+        loadComponent: () => import('./pages/moderators/moderators.component').then(m => m.ModeratorsComponent),
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['VIEW_MODERATORS'],
+          isFallback: true
+        }
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./pages/roles/roles.component').then(m => m.RolesComponent),
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['VIEW_ROLES'],
+          isFallback: true
+        }
+      },
+      {
+        path: 'modules',
+        loadComponent: () => import('./pages/modules-and-permissions/modules-and-permissions.component').then(m => m.ModulesAndPermissionsComponent),
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['VIEW_MODULES'],
           isFallback: true
         }
       },

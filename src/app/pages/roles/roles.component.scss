@@ -1,0 +1,80 @@
+.permissions-container {
+  max-height: calc(calc(65vh));
+  overflow-y: auto;
+}
+.chips-container-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chips-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+}
+
+h2 {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 24px;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chip {
+  border-radius: 24px;
+  border: 2px solid var(--cui-primary);
+  background: white;
+  color: var(--cui-primary);
+  font-size: var(--font-12);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+}
+
+.chip.active {
+  background: linear-gradient(135deg, var(--cui-primary) 0%, var(--cui-success) 100%);
+  color: white;
+  border-color: var(--cui-primary);
+}
+
+.selected-info {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.selected-info h3 {
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.selected-list {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.selected-item {
+  display: inline-block;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin: 4px 4px 4px 0;
+  color: #667eea;
+  font-weight: 500;
+}

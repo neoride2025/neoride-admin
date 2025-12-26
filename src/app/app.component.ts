@@ -10,12 +10,13 @@ import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
 import { SharedModule } from './others/shared.module';
 import { CustomToastComponent } from './global-components/custom-toast/custom-toast.component';
+import { HelperService } from './services/helper.service';
 
 @Component({
-    selector: 'app-root',
-    template: '<app-custom-toast></app-custom-toast><router-outlet />',
-    imports: [SharedModule, RouterOutlet, CustomToastComponent],
-    schemas: []
+  selector: 'app-root',
+  template: '<app-custom-toast></app-custom-toast><router-outlet />',
+  imports: [SharedModule, RouterOutlet, CustomToastComponent],
+  schemas: []
 })
 export class AppComponent implements OnInit {
   title = 'neoride Admin Panel';
@@ -28,6 +29,8 @@ export class AppComponent implements OnInit {
   readonly #colorModeService = inject(ColorModeService);
   readonly #iconSetService = inject(IconSetService);
 
+  readonly helperService = inject(HelperService);
+
   constructor() {
     this.#titleService.setTitle(this.title);
     // iconSet singleton
@@ -37,10 +40,10 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
+    console.log(this.helperService.getDataFromSession('userInfo'));
     this.#router.events.pipe(
-        takeUntilDestroyed(this.#destroyRef)
-      ).subscribe((evt) => {
+      takeUntilDestroyed(this.#destroyRef)
+    ).subscribe((evt) => {
       if (!(evt instanceof NavigationEnd)) {
         return;
       }

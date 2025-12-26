@@ -6,6 +6,29 @@ export const navItems: INavData[] = [
     url: '/dashboard',
     iconComponent: { name: 'cil-home' },
   },
+  {
+    title: true,
+    name: 'User Management'
+  },
+  {
+    name: 'Users',
+    iconComponent: { name: 'cil-people' }
+  },
+  {
+    name: 'Moderators',
+    url: '/moderators',
+    iconComponent: { name: 'cil-user' }
+  },
+  {
+    name: 'Roles',
+    url: '/roles',
+    iconComponent: { name: 'cil-https' }
+  },
+    {
+    name: 'Modules & Permissions',
+    url: '/modules',
+    iconComponent: { name: 'cil-columns' }
+  },
   // {
   //   title: true,
   //   name: 'Rides'

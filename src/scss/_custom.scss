@@ -6,13 +6,14 @@
 // custom tweaks for scrollbar styling (wip)
 @use "scrollbar";
 
- // custom calendar today cell color
+// custom calendar today cell color
 .calendar-cell.today {
   --cui-calendar-cell-today-color: var(--cui-info) !important;
 }
 
 // custom select week cursor pointer
-.select-week .calendar-row.current, .pointer {
+.select-week .calendar-row.current,
+.pointer {
   cursor: pointer;
 }
 
@@ -24,6 +25,249 @@
   --cui-btn-active-bg: var(--cui-primary);
 }
 
+// remove number field spinner
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+textarea {
+  resize: none;
+}
+
 .pointer {
   cursor: pointer !important;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-left-center {
+  display: flex;
+  justify-content: center;
+}
+
+.flex-top-center {
+  display: flex;
+  align-items: center;
+}
+
+.flex-space {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-around {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.w-30 {
+  width: 30%;
+}
+
+.w-60 {
+  width: 60%;
+}
+
+.w-max-60 {
+  max-width: 60%;
+}
+
+.w-80 {
+  width: 80%;
+}
+
+.w-max-80 {
+  max-width: 80%;
+}
+
+.w-85 {
+  width: 85%;
+}
+
+.w-max-85 {
+  max-width: 85%;
+}
+
+.w-90 {
+  width: 90%;
+}
+
+.w-max-90 {
+  max-width: 90%;
+}
+
+.w-95 {
+  width: 95%;
+}
+
+.h-10 {
+  height: 10%;
+}
+
+.h-20 {
+  height: 20%;
+}
+
+.h-30 {
+  height: 30%;
+}
+
+.h-60 {
+  height: 60%;
+}
+
+.h-80 {
+  height: 80%;
+}
+
+.h-85 {
+  height: 85%;
+}
+
+.h-90 {
+  height: 90%;
+}
+
+.h-95 {
+  height: 95%;
+}
+
+.top-1 {
+  top: 0.25rem !important;
+}
+
+.top-2 {
+  top: 0.5rem !important;
+}
+
+.top-3 {
+  top: 1rem !important;
+}
+
+.top-4 {
+  top: 1.5rem !important;
+}
+
+.top-5 {
+  top: 3rem !important;
+}
+
+.top-auto {
+  top: 0 !important;
+  bottom: 0 !important;
+  margin: 0 auto !important;
+}
+
+.full-auto {
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: auto !important;
+}
+
+.bottom-0 {
+  bottom: 0 !important;
+}
+
+.bottom-1 {
+  bottom: 0.25rem !important;
+}
+
+.bottom-2 {
+  bottom: 0.5rem !important;
+}
+
+.bottom-3 {
+  bottom: 1rem !important;
+}
+
+.bottom-4 {
+  bottom: 1.5rem !important;
+}
+
+.bottom-5 {
+  bottom: 3rem !important;
+}
+
+.right-0 {
+  right: 0 !important;
+}
+
+.right-1 {
+  right: 0.25rem !important;
+}
+
+.right-2 {
+  right: 0.5rem !important;
+}
+
+.right-3 {
+  right: 1rem !important;
+}
+
+.right-4 {
+  right: 1.5rem !important;
+}
+
+.right-5 {
+  right: 3rem !important;
+}
+
+.left-0 {
+  left: 0 !important;
+}
+
+.left-1 {
+  left: 0.25rem !important;
+}
+
+.left-2 {
+  left: 0.5rem !important;
+}
+
+.left-3 {
+  left: 1rem !important;
+}
+
+.left-4 {
+  left: 1.5rem !important;
+}
+
+.left-5 {
+  left: 3rem !important;
+}
+
+.max-w-25 {
+  max-width: 25% !important;
+}
+
+.max-w-50 {
+  max-width: 50% !important;
+}
+
+.max-w-75 {
+  max-width: 75% !important;
+}
+
+.max-w-100 {
+  max-width: 100% !important;
+}
+
+.fw-900 {
+  font-weight: 900 !important;
 }

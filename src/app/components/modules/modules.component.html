@@ -1,0 +1,114 @@
+@if (loading || submitting) {
+<app-loader [message]="loaderMessage"></app-loader>
+} @if(!loading) {
+<div class="flex-space">
+  <h5 class="">Modules</h5>
+  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="moduleModal.id">Add Module</button>
+</div>
+<table cTable responsive>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Created By</th>
+      <th>Created On</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  @if(paginatedData.length > 0) {
+  <tbody>
+    @for (module of paginatedData; track $index) {
+    <tr>
+      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
+      <td>{{ module.name }}</td>
+      <td>
+        {{ module.createdBy?.name || "-" }}
+        @if (module.createdBy?.role) {
+       <span><c-badge color="primary">{{ module.createdBy?.role.name }}</c-badge></span>
+        }
+      </td>
+         <td>
+        <span>{{ module.createdAt | date : "mediumDate" }} </span>
+        <span>{{ module.createdAt | date : "shortTime" }}</span>
+      </td>
+      <td>
+        <c-form-check [switch]="true" sizing="lg">
+          <input
+            cFormCheckInput
+            [checked]="module.isActive"
+            type="checkbox"
+            [disabled]="module.isSystemModule"
+            (change)="onCheckboxChange(module)"
+          />
+        </c-form-check>
+      </td>
+      <td class="d-flex gap-4">
+        <button cButton color="danger" size="sm" [disabled]="module.isSystemModule">Delete</button>
+        <button cButton color="info" size="sm">Update</button>
+      </td>
+    </tr>
+    }
+  </tbody>
+  } @if (paginatedData.length === 0) {
+  <tbody>
+    <tr>
+      <td colspan="100%" class="text-center py-4">No Modules found</td>
+    </tr>
+  </tbody>
+  }
+</table>
+} @if(!loading && paginatedData.length > 0) {
+<c-pagination align="start">
+  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
+    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
+  </li>
+  @for (_ of pagesArray; track $index) {
+  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
+    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
+  </li>
+  }
+  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
+    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
+  </li>
+</c-pagination>
+}
+<c-modal #moduleModal backdrop="static" alignment="center" id="moduleModal" [(visible)]="showModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Module</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <div class="mb-2">
+        <label cLabel for="moduleName">Name</label>
+        <input cFormControl id="moduleName" name="moduleName" type="text" [(ngModel)]="moduleForm.name" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="roleDescription">Description</label>
+        <textarea
+          cFormControl
+          id="moduleDescription"
+          name="moduleDescription"
+          rows="6"
+          [(ngModel)]="moduleForm.description"
+        ></textarea>
+      </div>
+      <div class="mb-2">
+        <c-form-check class="d-flex gap-2">
+          <input
+            cFormCheckInput
+            id="systemModule"
+            name="systemModule"
+            type="checkbox"
+            [(ngModel)]="moduleForm.isSystemModule"
+          />
+          <label cFormCheckLabel for="systemModule">Keep this as System Module</label>
+        </c-form-check>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button (click)="closeModal(true)" cButton color="secondary">Close</button>
+    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Add" }}</button>
+  </c-modal-footer>
+</c-modal>

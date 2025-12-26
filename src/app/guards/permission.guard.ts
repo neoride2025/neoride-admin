@@ -34,6 +34,6 @@ function getFirstAllowedRoute(permissions: string[], toastService: ToastService)
     const route = PERMISSION_ROUTE_MAP[p];
     if (route) return route;
   }
-  // toastService.info('You are not allowed to access this page');
+  toastService.info('You are not allowed to access this page');
   return null;
 }

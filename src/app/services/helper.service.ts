@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Config } from '../others/config';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { ToastService } from './toast.service';
 
 @Injectable({
@@ -11,6 +11,8 @@ export class HelperService {
   config = new Config();
   mobilePattern = /^[6-9][0-9]{9}$/;
   emailPattern: any = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
+  passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  casePattern = /^[A-Z]+(_[A-Z]+)*$/;
 
   constructor(
     private router: Router,
@@ -33,7 +35,6 @@ export class HelperService {
     sessionStorage.clear();
     logoutMessage = logoutMessage ? logoutMessage : 'Logout Successfully';
     this.toastService.success(logoutMessage);
-    this.clearCookie('refreshToken');
     this.goTo('login');
   }
 
@@ -58,6 +59,54 @@ export class HelperService {
       return true;
   }
 
+  // function to validate the key (only camel case)
+  validateCase(key: string) {
+    if (!key)
+      return false;
+    else if (!this.casePattern.test(key))
+      return false;
+    else
+      return true;
+  }
+
+  // function to prepare the KEY (Dashboard => Dashboard, Contact view => CONTACT_VIEW)
+  toCapsWithUnderscore(value: unknown): string {
+    if (typeof value !== 'string') return '';
+
+    return value
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, '_') // 👈 space + symbols → _
+      .replace(/^_+|_+$/g, '')       // 👈 trim _
+      .toUpperCase();
+  }
+
+  // function to prepare key from label/name text
+  labelToPermissionKey(label: unknown): string {
+    if (typeof label !== 'string') return '';
+
+    const parts = label
+      .trim()
+      .replace(/[^a-zA-Z\s]/g, '') // remove symbols
+      .split(/\s+/);
+
+    if (parts.length < 2) return '';
+
+    const action = parts[0];
+    const module = parts.slice(1).join('_');
+
+    return `${module}_${action}`.toUpperCase();
+  }
+
+
+  // function to close any modal when routing started
+  closeModalIfOpened(callBack: any) {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        callBack();
+      }
+    });
+  }
+
   setDataToSession(key: string, data: any) {
     sessionStorage.setItem(key, JSON.stringify(data));
   }
@@ -65,11 +114,6 @@ export class HelperService {
   getDataFromSession(key: string) {
     const data = sessionStorage.getItem(key);
     return data ? JSON.parse(data) : null;
-    return JSON.parse(JSON.stringify(sessionStorage.getItem(key)));
-  }
-
-  clearCookie(name: string, path = '/') {
-    document.cookie = `${name}=; Max-Age=0; path=${path}`;
   }
 
   getRandomCoreUIColor(): any {
@@ -87,3 +131,8 @@ export class HelperService {
   }
 
 }
+  // httpOnly: true,
+  // secure: false, // 🔴 MUST be false on http://localhost
+  // sameSite: "Lax", // 🔴 allows cross-origin POST
+  // path: "/",
+  // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days

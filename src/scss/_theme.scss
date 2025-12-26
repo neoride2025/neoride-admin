@@ -4,13 +4,28 @@
 :root {
   --cui-primary: #{$primary};
   --cui-primary-text: #{$primary-text-emphasis};
-  --cui-secondary: #{$secondary};
   --cui-success: #{$success};
   --cui-info: #{$info};
   --cui-warning: #{$warning};
   --cui-danger: #{$danger};
   --cui-light: #{$light};
   --cui-dark: #{$dark};
+
+  // additional colors
+  --cui-accent: #{$accent};
+
+  --font-12: #{$font12};
+  --font-14: #{$font14};
+  --font-16: #{$font16};
+  --font-18: #{$font18};
+  --font-22: #{$font22};
+  --font-24: #{$font24};
+  --font-28: #{$font28};
+  --font-32: #{$font32};
+  --font-36: #{$font36};
+  --font-48: #{$font48};
+  --font-64: #{$font64};
+  --font-72: #{$font72};
 }
 
 body {
