@@ -1,5 +1,5 @@
 
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
@@ -9,14 +9,14 @@ import { ColorModeService } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
 import { SharedModule } from './others/shared.module';
-import { CustomToastComponent } from './global-components/custom-toast/custom-toast.component';
 import { HelperService } from './services/helper.service';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-root',
-  template: '<app-custom-toast></app-custom-toast><router-outlet />',
-  imports: [SharedModule, RouterOutlet, CustomToastComponent],
-  schemas: []
+  template: '<p-toast position="top-right"></p-toast><router-outlet />',
+  imports: [SharedModule, RouterOutlet, ToastModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppComponent implements OnInit {
   title = 'neoride Admin Panel';

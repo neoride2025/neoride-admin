@@ -15,12 +15,12 @@ export class RoleAPIService {
         this.authUrl = environment.apiURL + 'admin/';
     }
 
-    createRole(role: any) {
-        return this.httpClient.post(this.authUrl + 'create-role', role);
+    createRole(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-role', payload);
     }
 
-    updateRole(role: any) {
-        return this.httpClient.put(this.authUrl + 'update-role', role);
+    updateRole(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `roles/${id}`, payload);
     }
 
     getRoles() {
@@ -31,5 +31,8 @@ export class RoleAPIService {
         return this.httpClient.get(this.authUrl + 'grouped-permissions');
     }
 
+    deleteRole(id: string) {
+        return this.httpClient.delete(this.authUrl + `roles/${id}`);
+    }
 
 }

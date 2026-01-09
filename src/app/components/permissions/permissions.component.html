@@ -1,83 +1,210 @@
 @if (loading || submitting) {
 <app-loader [message]="loaderMessage"></app-loader>
-} @if(!loading) {
-<div class="flex-space">
-  <h5 class="">Permissions</h5>
-  <button class="mb-3 float-end" cButton color="primary" [cModalToggle]="permissionModal.id">Add Permission</button>
-</div>
-<table cTable responsive>
-  <thead>
+} 
+<!-- Table starting -->
+<p-table
+  #dt
+  [value]="permissions"
+  dataKey="_id"
+  [paginator]="true"
+  showGridlines
+  [rows]="5"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [globalFilterFields]="['label', 'isActive', 'createdBy.name', 'createdAt']"
+  filterDisplay="menu"
+>
+  <!-- Global Search -->
+  <ng-template pTemplate="caption">
+    <div class="flex-top-center gap-2">
+      <h5 class="mb-0">Permissions</h5>
+      <input
+        pInputText
+        type="text"
+        placeholder="Global search"
+        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+        class="ms-auto"
+      />
+      <button pButton size="small" [cModalToggle]="permissionModal.id">
+        <i class="pi pi-plus" pButtonIcon></i>
+        <span pButtonLabel>New</span>
+      </button>
+      <!-- <button class="float-end flex-top-center gap-2" cButton color="primary" [cModalToggle]="moderatorModal.id">  <i class="pi pi-plus"></i> <span>New</span></button> -->
+    </div>
+  </ng-template>
+
+  <!-- Header -->
+  <ng-template pTemplate="header">
     <tr>
-      <th>#</th>
-      <th>Label</th>
-      <th>Key</th>
-      <th>Module</th>
-      <th>Created By</th>
-      <th>Created On</th>
-      <th>Status</th>
-      <th>Action</th>
+      <!-- Permission Label -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Label</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="label"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Permission Key -->
+      <th style="width: 220px">
+        <div class="flex-space">
+          <h6>Key</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="key"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Permission under Module -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Module</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="module.name"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Created By -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created By</h6>
+          <p-columnFilter
+            field="createdBy.name"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="moderators"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="name"
+              >
+                <ng-template let-moderator #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ moderator.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Created On -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created On</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="date"
+            field="createdAt"
+            display="menu"
+          ></p-columnFilter>
+        </div>
+      </th>
+      <!-- Permission Active Status -->
+      <th style="width: 120px">
+        <div class="flex-space">
+          <h6>Status</h6>
+          <p-columnFilter
+            field="isActive"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="statuses"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="value"
+              >
+                <ng-template let-status #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ status.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Permission Actions -->
+      <th style="width: 200px">
+        <h6>Actions</h6>
+      </th>
     </tr>
-  </thead>
-  @if(paginatedData.length > 0) {
-  <tbody>
-    @for (permission of paginatedData; track $index) {
+  </ng-template>
+
+  <!-- Body -->
+  <ng-template pTemplate="body" let-permission>
     <tr>
-      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
-      <td>{{ permission.label }}</td>
-      <td>{{ permission.key }}</td>
-      <td>{{ permission.module?.name }}</td>
+      <td class="text-truncate" [title]="permission.label">{{ permission.label }}</td>
+      <td class="text-truncate" [title]="permission.key">{{ permission.key }}</td>
+      <td class="text-truncate" [title]="permission.module.name">{{ permission.module.name }}</td>
       <td>
-        {{ permission.createdBy?.name }}
-        @if (permission.createdBy?.role) {
-          <span><c-badge color="primary">{{ permission.createdBy?.role.name }}</c-badge></span>
-        }
+        <div class="flex-top-center gap-2">
+          <span class="text-truncate w-max-60" [title]="permission.createdBy?.name">{{
+            permission.createdBy?.name
+          }}</span>
+          @if (permission.createdBy?.role) {
+          <p-badge [value]="permission.createdBy?.role.name" badgeSize="small" />
+          }
+        </div>
       </td>
       <td>
         <span>{{ permission.createdAt | date : "mediumDate" }} </span>
         <span>{{ permission.createdAt | date : "shortTime" }}</span>
       </td>
       <td>
-        <c-form-check [switch]="true" sizing="lg">
+        <c-form-check [switch]="true" sizing="xl">
           <input
             cFormCheckInput
             [checked]="permission.isActive"
+            [(ngModel)]="permission.isActive"
             type="checkbox"
-            [disabled]="permission.isSystemRole"
-            (change)="onCheckboxChange(module)"
+            (change)="getPermissionChangedStatus(permission)"
           />
         </c-form-check>
       </td>
-      <td class="d-flex gap-4">
-        <button cButton color="danger" size="sm">Delete</button>
-        <button cButton color="info" size="sm">Update</button>
+      <td class="d-flex gap-3">
+        <p-button label="Update" severity="info" size="small" />
+        <p-button label="Delete" severity="danger" size="small" />
       </td>
     </tr>
-    }
-  </tbody>
-  } @if (paginatedData.length === 0) {
-  <tbody>
+  </ng-template>
+
+  <!-- No Data template -->
+  <ng-template #emptymessage>
     <tr>
-      <td colspan="100%" class="text-center py-4">No Permissions found</td>
+      <td colspan="7">No permissions found.</td>
     </tr>
-  </tbody>
-  }
-</table>
-}
+  </ng-template>
+</p-table>
 
-<c-pagination align="start">
-  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
-    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
-  </li>
-  @for (_ of pagesArray; track $index) {
-  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
-    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
-  </li>
-  }
-  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
-    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
-  </li>
-</c-pagination>
-
+<!-- New/Update modal -->
 <c-modal #permissionModal backdrop="static" alignment="center" id="permissionModal" [(visible)]="showModal">
   <c-modal-header>
     <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Permission</h5>
@@ -88,7 +215,7 @@
         <label cLabel for="inputLabel-1">Module</label>
         <select aria-label="Default select example" cSelect name="permissionModule" [(ngModel)]="permissionForm.module">
           <option>Select Module</option>
-          @for (module of modules(); track module) {
+          @for (module of modules; track module) {
           <option [value]="module._id">{{ module.name }}</option>
           }
         </select>
@@ -103,10 +230,20 @@
           [(ngModel)]="permissionForm.label"
         />
       </div>
+      <div class="mb-2">
+        <label cLabel for="roleDescription">Description</label>
+        <textarea
+          cFormControl
+          id="roleDescription"
+          name="roleDescription"
+          rows="10"
+          [(ngModel)]="permissionForm.description"
+        ></textarea>
+      </div>
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button (click)="closeModal(true)" cButton color="secondary">Close</button>
-    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Add" }}</button>
+    <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
+    <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
   </c-modal-footer>
 </c-modal>

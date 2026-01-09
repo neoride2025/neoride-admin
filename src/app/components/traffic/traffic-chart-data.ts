@@ -101,7 +101,6 @@ export class TrafficChartsData {
       datasets,
       labels: this.config.months
     };
-    console.log('main chart data : ', this.mainChart.data);
   }
 
   getScales() {

@@ -1,17 +1,28 @@
 import { SharedModule } from './../../others/shared.module';
 import { LoaderComponent } from './../../global-components/loader/loader.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
-import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, BadgeComponent } from '@coreui/angular';
+import { FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective } from '@coreui/angular';
 import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
 import { ModuleAPIService } from '../../apis/module.service';
 import { DatePipe } from '@angular/common';
-import { ModuleState } from '../../../signals/module-state';
+import { Badge } from 'primeng/badge';
+import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectModule } from 'primeng/select';
+import { ToggleButton } from 'primeng/togglebutton';
+import { ButtonModule } from 'primeng/button';
+import { Table, TableModule } from 'primeng/table';
+import { GlobalAPIService } from '../../apis/global.service';
+import { ForceLoadState } from '../../signals/force-load.state';
 
 @Component({
   selector: 'app-modules',
-  imports: [SharedModule, LoaderComponent, TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, BadgeComponent, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormCheckComponent, FormCheckInputDirective, FormDirective, FormLabelDirective, DatePipe],
+  imports: [
+    SharedModule, LoaderComponent, DatePipe,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
+    FormCheckComponent, FormCheckInputDirective, FormSelectDirective, FormControlDirective, FormDirective, FormLabelDirective],
   templateUrl: './modules.component.html',
   styleUrl: './modules.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -22,20 +33,24 @@ export class ModulesComponent {
   helperService = inject(HelperService);
   toastService = inject(ToastService);
   module = inject(ModuleAPIService);
-  moduleState = inject(ModuleState)
+  global = inject(GlobalAPIService);
+  forceLoadState = inject(ForceLoadState);
 
   // common things
   config: any = this.helperService.config;
   userInfo: any = this.helperService.getDataFromSession('userInfo');
   loading = false;
   loaderMessage = '';
+  forceLoadRoles = this.forceLoadState.forceLoadRoles;
+  forceLoadModules = this.forceLoadState.forceLoadModules;
 
   // table & list
+  @ViewChild('dt') table!: Table;
   modules: any[] = [];
-  paginatedData: any[] = [];
-  currentPage = 1;
-  pageSize = 5;
-  totalPages = 0;
+  showSelectAll = false;
+  moderators: any[] = [];
+  selectedModerator?: string;
+  statuses = this.helperService.getStatusItems();
 
   // new / update permission
   @ViewChild('moduleModal') moduleModal!: any;
@@ -50,22 +65,22 @@ export class ModulesComponent {
   }
 
   ngOnInit() {
-    this.getModules();
+    this.getModulesComponentData();
     this.helperService.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
 
-  getModules() {
-    this.modules = [];
+  getModulesComponentData() {
+    this.moderators = this.modules = [];
     this.loading = true;
     this.loaderMessage = 'Loading modules...';
-    this.module.getAllModules().subscribe((res: any) => {
+    this.global.getModulesComponentData(this.forceLoadModules()).subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200) {
-        this.modules = res.data;
-        this.moduleState.setModule(this.modules);
-        this.prepareModules();
+        this.modules = res.data.modules;
+        this.moderators = res.data.moderators;
+        this.forceLoadState.clearModulesForceLoad();
       }
       else
         this.toastService.error(res.message);
@@ -75,31 +90,52 @@ export class ModulesComponent {
     })
   }
 
-  prepareModules() {
-    this.totalPages = Math.ceil(this.modules.length / this.pageSize);
-    this.updatePagination();
-  }
-
-  updatePagination() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedData = this.modules.slice(start, end);
-  }
-
-  changePage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePagination();
-  }
-
-  get pagesArray() {
-    return Array.from({ length: this.totalPages });
-  }
-
   //#region Table action functions
 
-  onCheckboxChange(module: any) {
-    module.isActive = !module.isActive;
+  getModuleChangedStatus(module: any) {
+    this.module.updateModule(module._id, { isActive: module.isActive }).subscribe((res: any) => {
+      if (res.status === 200) {
+        this.toastService.success(res.message, 'Module Status');
+        this.forceLoadState.setForceLoadRoles(true);
+        this.forceLoadState.setForceLoadPermissions(true);
+      }
+      else {
+        this.toastService.info(res.message, 'Module Status');
+        module.isActive = !module.isActive;
+      }
+    }, err => {
+      this.toastService.error(err.error.message, 'Module Status');
+      module.isActive = !module.isActive;
+    })
+  }
+
+  moduleDeleteConfirmation(moduleData: any, index: number) {
+    const alertPayload = {
+      header: 'Delete Module',
+      message: 'Are you sure you want to delete this module?',
+      acceptBtnLabel: 'Delete',
+      rejectBtnLabel: 'Cancel'
+    }
+    this.helperService.actionConfirmation(alertPayload, (accepted: any) => {
+      if (accepted)
+        this.deleteModule(moduleData._id, index);
+    })
+  }
+
+  deleteModule(id: string, index: number) {
+    this.module.deleteModule(id).subscribe((res: any) => {
+      if (res.status === 200) {
+        this.toastService.success(res.message);
+        this.modules.splice(index, 1);
+        this.forceLoadState.setForceLoadRoles(true);
+        this.forceLoadState.setForceLoadPermissions(true);
+        this.table.reset();
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      this.toastService.error(err.error.message);
+    })
   }
 
   //#endregion
@@ -129,7 +165,6 @@ export class ModulesComponent {
       else
         this.toastService.error(res.message);
     }, err => {
-      console.log('err : ', err);
       this.submitting = false;
       this.toastService.error(err.error.message);
     })
@@ -138,11 +173,11 @@ export class ModulesComponent {
   // will push the recently created module to the list without call the API
   pushNewModuleToList(module: any) {
     this.modules.push(module); // this will add the new module to the list also send through signal
-    this.prepareModules();
   }
 
   updateModule() {
-
+    this.forceLoadState.setForceLoadRoles(true);
+    this.forceLoadState.setForceLoadPermissions(true);
   }
 
   clearForm() {

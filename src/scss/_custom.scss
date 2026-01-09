@@ -17,14 +17,6 @@
   cursor: pointer;
 }
 
-.btn-primary {
-  --cui-btn-color: var(--cui-primary-text);
-  --cui-btn-bg: var(--cui-primary);
-  --cui-btn-hover-color: var(--cui-primary-text);
-  --cui-btn-active-color: var(--cui-primary-text);
-  --cui-btn-active-bg: var(--cui-primary);
-}
-
 // remove number field spinner
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -44,6 +36,21 @@ textarea {
 
 .pointer {
   cursor: pointer !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ion-card {
+  margin: 0 !important;
+}
+
+.admin-user-tag {
+  font-size: var(--font-12);
+  border: 1px dashed var(--cui-secondary);
 }
 
 .flex-center {
@@ -271,3 +278,74 @@ textarea {
 .fw-900 {
   font-weight: 900 !important;
 }
+
+// ------------------- primeng component style changes ------------------- 
+
+.p-datatable-header {
+  border-radius: var(--common-border-radius) var(--common-border-radius) 0 0 !important;
+}
+
+.p-paginator {
+  border-radius: 0 0 var(--common-border-radius) var(--common-border-radius) !important;
+}
+
+p-columnfilterformelement, p-datepicker {
+  .p-inputtext, p-datepicker, p-select {
+    width: 100% !important;
+  }
+}
+
+.p-inputtext,
+.p-togglebutton {
+  height: var(--input-height) !important;
+  font-size: var(--font-12) !important;
+}
+.p-select {
+  height: var(--input-height) !important;
+  .p-select-label {
+    font-size: var(--font-12) !important;
+  }
+}
+
+// toast message alignment
+/* Remove hidden spacing that causes vertical shift */
+.p-toast-summary,
+.p-toast-detail {
+  line-height: 1.2 !important;
+}
+
+/* Fix PrimeNG table row vertical alignment */
+.p-datatable .p-datatable-tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* Center PrimeNG inline components */
+.p-datatable .p-tag,
+.p-datatable .p-inputswitch {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Fix text drifting inside rows */
+.p-datatable td {
+  line-height: 1.5;
+}
+
+.p-datatable table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+// ----------------------------------------------------------------------- 
+
+// ------------------- custom button style changes -------------------
+.btn-primary {
+  --cui-btn-color: var(--cui-primary-text);
+  --cui-btn-bg: var(--cui-primary);
+  --cui-btn-hover-color: var(--cui-primary-text);
+  --cui-btn-active-color: var(--cui-primary-text);
+  --cui-btn-active-bg: var(--cui-primary);
+}
+
+
+// -------------------------------------------------------------------

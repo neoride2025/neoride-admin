@@ -1,35 +1,180 @@
-<div class="flex-space mb-3">
-  <h5 class="">Moderators</h5>
-  <div class="flex-space">
-    <!-- <input cFormControl class="w-60" placeholder="Search..." [(ngModel)]="search" (input)="applyFilter()" /> -->
-    <button class="float-end" cButton color="primary" [cModalToggle]="moderatorModal.id">Add Moderator</button>
-  </div>
-</div>
-<table cTable responsive>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Role</th>
-      <th>Created By</th>
-      <th>Created On</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+@if (loading || submitting) {
+<app-loader [message]="loaderMessage"></app-loader>
+} @if(!loading) {
+<!-- Table starting -->
+<p-table
+  #dt
+  [value]="moderators"
+  dataKey="_id"
+  [paginator]="true"
+  showGridlines
+  [rows]="5"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [globalFilterFields]="['name', 'email', 'role.name', 'status', 'createdAt', 'createdBy.name']"
+  filterDisplay="menu"
+>
+  <!-- Global Search -->
+  <ng-template pTemplate="caption">
+    <div class="flex-top-center gap-2">
+      <h5 class="mb-0">Moderators</h5>
+      <input
+        pInputText
+        type="text"
+        placeholder="Global search"
+        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+        class="ms-auto"
+      />
+      <button pButton size="small" [cModalToggle]="moderatorModal.id">
+        <i class="pi pi-plus" pButtonIcon></i>
+        <span pButtonLabel>New</span>
+      </button>
+    </div>
+  </ng-template>
 
-  <tbody>
-    @for (moderator of paginatedData; track $index) {
+  <!-- Header -->
+  <ng-template pTemplate="header">
     <tr>
-      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
-      <td>{{ moderator.name }}</td>
-      <td>{{ moderator.email }}</td>
-      <td>{{ moderator.role?.name }}</td>
+      <!-- Moderator Name -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Name</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="name"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Moderator Email -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Email</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="email"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Moderator Role -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Role</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="role.name"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Created By -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created By</h6>
+          <p-columnFilter
+            field="createdBy.name"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="moderators"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="name"
+              >
+                <ng-template let-moderator #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ moderator.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Created On -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created On</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="date"
+            field="createdAt"
+            display="menu"
+          ></p-columnFilter>
+        </div>
+      </th>
+      <!-- Moderator Active Status -->
+      <th style="width: 120px">
+        <div class="flex-space">
+          <h6>Status</h6>
+          <p-columnFilter
+            field="isActive"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="statuses"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="value"
+              >
+                <ng-template let-status #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ status.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Moderator Actions -->
+      <th style="width: 200px">
+        <h6>Actions</h6>
+      </th>
+    </tr>
+  </ng-template>
+
+  <!-- Body -->
+  <ng-template pTemplate="body" let-moderator let-index="rowIndex">
+    <tr>
+      <td class="text-truncate" [title]="moderator.name">{{ moderator.name }}</td>
+      <td class="text-truncate" [title]="moderator.email">{{ moderator.email }}</td>
+      <td class="text-truncate" [title]="moderator.role.name">{{ moderator.role.name }}</td>
       <td>
-        {{ moderator.createdBy?.name || '-' }}
-        @if (moderator.createdBy?.name) {
-         <span><c-badge color="primary">{{ moderator.createdBy?.role.name }}</c-badge></span>
+        @if(moderator.isSystemUser) {
+        <span class="admin-user-tag p-1 px-2 rounded-2">System Admin</span>
+        } @else {
+        <div class="flex-top-center gap-2">
+          <span class="text-truncate w-max-60" [title]="moderator.createdBy?.name">{{
+            moderator.createdBy?.name
+          }}</span>
+          @if (moderator.createdBy?.role?.name) {
+          <p-badge [value]="moderator.createdBy?.role.name" badgeSize="small" />
+          }
+        </div>
         }
       </td>
       <td>
@@ -37,33 +182,45 @@
         <span>{{ moderator.createdAt | date : "shortTime" }}</span>
       </td>
       <td>
-        <c-form-check [switch]="true">
-          <input cFormCheckInput [checked]="moderator.isActive" [disabled]="moderator.isSystemUser" type="checkbox" (change)="onCheckboxChange($event)" />
+        <c-form-check [switch]="true" sizing="xl">
+          <input
+            cFormCheckInput
+            [checked]="moderator.isActive"
+            [(ngModel)]="moderator.isActive"
+            [disabled]="moderator.isSystemUser"
+            type="checkbox"
+            (change)="getModeratorChangedStatus(moderator)"
+          />
         </c-form-check>
       </td>
-      <td class="d-flex gap-4">
-        <button cButton color="danger" size="sm" [disabled]="moderator.isSystemUser">Delete</button>
-        <button cButton color="info" size="sm">Update</button>
+      <td class="d-flex gap-3">
+        <p-button
+          label="Update"
+          severity="info"
+          size="small"
+          [disabled]="moderator.isSystemUser"
+          (click)="updateModerator()"
+        />
+        <p-button
+          label="Delete"
+          severity="danger"
+          size="small"
+          [disabled]="moderator.isSystemUser"
+          (click)="moderatorDeleteConfirmation(moderator, index)"
+        />
       </td>
     </tr>
-    }
-  </tbody>
-</table>
+  </ng-template>
 
-<c-pagination align="center">
-  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
-    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
-  </li>
-  @for (_ of pagesArray; track $index) {
-  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
-    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
-  </li>
-  }
-  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
-    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
-  </li>
-</c-pagination>
-
+  <!-- No Data template -->
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="7">No moderators found.</td>
+    </tr>
+  </ng-template>
+</p-table>
+}
+<!-- New/update Moderator Modal -->
 <c-modal #moderatorModal backdrop="static" alignment="center" id="moderatorModal" [(visible)]="showModal">
   <c-modal-header>
     <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Moderator</h5>
@@ -90,13 +247,33 @@
       </div>
       <div class="mb-2">
         <label cLabel for="moderatorPassword">Password</label>
-        <input
-          cFormControl
-          id="moderatorPassword"
-          name="moderatorPassword"
-          type="text"
-          [(ngModel)]="moderatorForm.password"
-        />
+        <div class="position-relative">
+          <input
+            cFormControl
+            id="moderatorPassword"
+            name="moderatorPassword"
+            type="text"
+            [(ngModel)]="moderatorForm.password"
+          />
+          @if(moderatorForm.password) {
+          <p-button
+            size="small"
+            variant="text"
+            class="position-absolute top-1 right-5 my-auto"
+            (click)="copyPassword()"
+          >
+            <i class="pi pi-copy" pButtonIcon></i>
+          </p-button>
+          }
+          <p-button
+            size="small"
+            variant="text"
+            class="position-absolute top-1 right-2 my-auto"
+            (click)="generateNewPassword()"
+          >
+            <i class="pi pi-refresh" pButtonIcon></i>
+          </p-button>
+        </div>
       </div>
       <div class="mb-2">
         <label cLabel for="moderatorRole">Role</label>
@@ -132,7 +309,7 @@
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button [cModalToggle]="moderatorModal.id" cButton color="secondary">Close</button>
-    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Create" }}</button>
+    <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
+    <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
   </c-modal-footer>
 </c-modal>
