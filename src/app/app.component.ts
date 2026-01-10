@@ -7,7 +7,7 @@ import { delay, filter, map, tap } from 'rxjs/operators';
 
 import { ColorModeService } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
-import { iconSubset } from './icons/icon-subset';
+import { iconSubset } from './core/icons/icon-subset';
 import { SharedModule } from './others/shared.module';
 import { HelperService } from './services/helper.service';
 import { ToastModule } from 'primeng/toast';
@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
 
   constructor() {
     this.#titleService.setTitle(this.title);
-    // iconSet singleton
+        // iconSet singleton
     this.#iconSetService.icons = { ...iconSubset };
     this.#colorModeService.localStorageItemName.set('coreui-free-angular-admin-template-theme-default');
     this.#colorModeService.eventName.set('ColorSchemeChange');

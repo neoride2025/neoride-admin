@@ -15,7 +15,7 @@ import {
 } from '@coreui/angular';
 
 import { DefaultFooterComponent, DefaultHeaderComponent } from './';
-import { AppSidebarService } from '../../services/app-sidebar.service';
+import { HelperService } from 'src/app/services/helper.service';
 
 function isOverflown(element: HTMLElement) {
   return (
@@ -46,6 +46,10 @@ function isOverflown(element: HTMLElement) {
   ]
 })
 export class DefaultLayoutComponent {
-  public appSidebarService = inject(AppSidebarService);
-  public navItems = this.appSidebarService.buildNav();
+  
+  // injectable dependencies
+  private helperService = inject(HelperService);
+
+  navItems: any[] = this.helperService.getDataFromSession('navigationItems');
+
 }

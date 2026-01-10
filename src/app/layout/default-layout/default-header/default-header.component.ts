@@ -27,13 +27,17 @@ import { HelperService } from '../../../services/helper.service';
 @Component({
   selector: 'app-default-header',
   templateUrl: './default-header.component.html',
-  imports: [ContainerComponent, HeaderTogglerDirective, 
+  imports: [ContainerComponent, HeaderTogglerDirective,
     SidebarToggleDirective, IconDirective, HeaderNavComponent,
-     RouterLink, NgTemplateOutlet, DropdownComponent, DropdownToggleDirective, AvatarComponent, 
-     ConfirmDialog,
-     DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
+    RouterLink, NgTemplateOutlet, DropdownComponent, DropdownToggleDirective, AvatarComponent,
+    ConfirmDialog,
+    DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
 })
 export class DefaultHeaderComponent extends HeaderComponent {
+
+  // injectable dependencies
+  private auth = inject(AuthAPIService);
+  private helperService = inject(HelperService);
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -49,10 +53,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor(
-    private auth: AuthAPIService,
-    private helperService: HelperService
-  ) {
+  constructor() {
     super();
   }
 

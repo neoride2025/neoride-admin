@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiURL: 'https://api.neoride.in/v1/',
+  apiURL: 'https://api.neoride.in/v2/',
 };

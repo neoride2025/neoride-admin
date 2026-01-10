@@ -5,19 +5,16 @@ import { environment } from '../../environments/environment';
 @Injectable({
     providedIn: 'root'
 })
-export class ProfileAPIService {
+export class AdminAPIService {
 
-    adminUrl = '';
-
+    adminUrl = ''
     constructor(
         private httpClient: HttpClient
     ) {
-        this.adminUrl = environment.apiURL + 'profile/';
+        this.adminUrl = environment.apiURL + 'staff/';
     }
 
-    getProfileDetails() {
-        return this.httpClient.post(this.adminUrl + 'account', {}, { withCredentials: true });
+    getNavigationMenuItems() {
+        return this.httpClient.get(this.adminUrl + 'menu-navigation', { withCredentials: true });
     }
-
-
 }

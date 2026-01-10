@@ -1,7 +1,7 @@
 import { INavData } from '@coreui/angular';
 
 export interface AppNavItem extends INavData {
-    permissions?: string[];
+    permission?: string;
 }
 
 export const MENU_ITEMS: AppNavItem[] = [
@@ -9,36 +9,36 @@ export const MENU_ITEMS: AppNavItem[] = [
         name: 'Dashboard',
         url: '/dashboard',
         iconComponent: { name: 'cil-home' },
-        permissions: ['VIEW_DASHBOARD']
+        permission: 'VIEW_DASHBOARD'
     },
     {
         title: true,
         name: 'User Management',
-        permissions: ['VIEW_USERS']
+        permission: 'VIEW_USERS'
     },
     {
         name: 'Users',
         url: '/users',
         iconComponent: { name: 'cil-people' },
-        permissions: ['VIEW_USERS']
+        permission: 'VIEW_USERS'
     },
     {
         name: 'Moderators',
         url: '/moderators',
         iconComponent: { name: 'cil-user' },
-        permissions: ['VIEW_MODERATORS']
+        permission: 'VIEW_MODERATORS'
     },
     {
         name: 'Roles',
         url: '/roles',
         iconComponent: { name: 'cil-https' },
-        permissions: ['VIEW_ROLES']
+        permission: 'VIEW_ROLES'
     },
     {
-        name: 'Modules & Permissions',
+        name: 'Modules & permission',
         url: '/modules',
         iconComponent: { name: 'cil-columns' },
-        permissions: ['VIEW_MODULES', 'VIEW_PERMISSIONS']
+        permission: 'VIEW_MODULES',
     },
     {
         title: true,
@@ -48,7 +48,7 @@ export const MENU_ITEMS: AppNavItem[] = [
         name: 'Contacts',
         url: '/contacts',
         iconComponent: { name: 'cil-contact' },
-        permissions: ['VIEW_CONTACTS']
+        permission: 'VIEW_CONTACTS'
     },
     {
         title: true,
