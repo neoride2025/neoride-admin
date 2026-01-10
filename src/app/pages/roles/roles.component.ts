@@ -1,30 +1,44 @@
 import { SharedModule } from './../../others/shared.module';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
-import { PageItemDirective, PageLinkDirective, PaginationComponent, PaginationModule, TableModule, ButtonDirective, FormDirective, FormControlDirective, FormLabelDirective, FormSelectDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormCheckLabelDirective, BadgeComponent } from '@coreui/angular';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
+import { FormDirective, FormControlDirective, FormLabelDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective } from '@coreui/angular';
 import { RoleAPIService } from '../../apis/role.service';
 import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
-import { DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { LoaderComponent } from '../../global-components/loader/loader.component';
+import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectModule } from 'primeng/select';
+import { ToggleButton } from 'primeng/togglebutton';
+import { Table, TableModule } from 'primeng/table';
+import { ModeratorAPIService } from '../../apis/moderator.service';
+import { ButtonModule } from 'primeng/button';
+import { Badge } from 'primeng/badge';
+import { GlobalAPIService } from '../../apis/global.service';
+import { ForceLoadState } from '../../signals/force-load.state';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [SharedModule, LoaderComponent,
-    TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, DatePipe, BadgeComponent,
-    FormCheckComponent, FormCheckInputDirective, FormSelectDirective, FormControlDirective, FormDirective, FormLabelDirective],
+  imports: [
+    SharedModule, LoaderComponent, CommonModule,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
+    FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective
+  ],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class RolesComponent {
 
-
   // injectable dependencies
   helperService = inject(HelperService);
   toastService = inject(ToastService);
   role = inject(RoleAPIService);
+  moderator = inject(ModeratorAPIService);
+  global = inject(GlobalAPIService);
+  forceLoadState = inject(ForceLoadState);
 
   // common things
   config: any = this.helperService.config;
@@ -32,81 +46,95 @@ export class RolesComponent {
   loading = false;
   submitting = false;
   loaderMessage = '';
+  forceLoadRoles = this.forceLoadState.forceLoadRoles;
 
   // table & list
+  @ViewChild('dt') table!: Table;
   roles: any[] = [];
-  paginatedData: any[] = [];
-  currentPage = 1;
-  pageSize = 5;
-  totalPages = 0;
+  moderators: any[] = [];
+  statuses = this.helperService.getStatusItems();
 
   // new / update role
   showModal = false;
   isModalForUpdate = false;
   selectedItems: string[] = [];
   modules: any[] = [];
-  roleForm: any = {
-    name: '',
-    description: '',
-    permissions: []
-  };
+  roleForm: any = {};
 
   ngOnInit() {
-    this.getRoles();
-    this.getAllPermissions();
+    this.getRolesComponentData();
     this.helperService.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
 
-  getRoles() {
+  getRolesComponentData() {
+    this.moderators = this.modules = this.roles = [];
     this.loading = true;
-    this.loaderMessage = 'Loading roles...';
-    this.roles = [];
-    this.role.getRoles().subscribe((res: any) => {
+    this.loaderMessage = 'Loading Roles...';
+    this.global.getRolesComponentData(this.forceLoadRoles()).subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200) {
-        this.roles = res.data;
-        this.prepareRoles();
+        this.roles = res.data.roles;
+        this.moderators = res.data.moderators;
+        this.modules = res.data.modules;
+        this.forceLoadRoles() ? this.forceLoadState.clearRolesForceLoad() : '';
       }
       else
-        this.toastService.info(res.message);
+        this.toastService.error(res.message);
     }, err => {
-      console.log('err : ', err);
+      this.loading = false;
       this.toastService.error(err.error.message);
     })
   }
 
-  getAllPermissions() {
-    this.role.getPermissionsByGrouped().subscribe((res: any) => {
-      console.log('res : ', res);
+  // #region Table action functions
+
+  getRoleChangedStatus(role: any) {
+    this.role.updateRole(role._id, { isActive: role.isActive }).subscribe((res: any) => {
       if (res.status === 200) {
-        this.modules = res.data;
-        console.log('modules : ', this.modules);
+        this.toastService.success(res.message, 'Role Status');
+        this.forceLoadState.setForceLoadModerators(true);
       }
+      else {
+        this.toastService.info(res.message, 'Role Status');
+        role.isActive = !role.isActive;
+      }
+    }, err => {
+      this.toastService.error(err.error.message, 'Role Status');
+      role.isActive = !role.isActive;
     })
   }
 
-  prepareRoles() {
-    this.totalPages = Math.ceil(this.roles.length / this.pageSize);
-    this.updatePagination();
+  roleDeleteConfirmation(roleData: any, index: number) {
+    const alertPayload = {
+      header: 'Delete Role',
+      message: 'Are you sure you want to delete this role?',
+      acceptBtnLabel: 'Delete',
+      rejectBtnLabel: 'Cancel'
+    }
+    this.helperService.actionConfirmation(alertPayload, (accepted: any) => {
+      if (accepted)
+        this.deleteRole(roleData._id, index);
+    })
   }
 
-  updatePagination() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedData = this.roles.slice(start, end);
+  deleteRole(id: string, index: number) {
+    this.role.deleteRole(id).subscribe((res: any) => {
+      if (res.status === 200) {
+        this.toastService.success(res.message);
+        this.roles.splice(index, 1);
+        this.table.reset();
+        this.forceLoadState.setForceLoadModerators(true);
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      this.toastService.error(err.error.message);
+    })
   }
 
-  changePage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePagination();
-  }
-
-  get pagesArray() {
-    return Array.from({ length: this.totalPages });
-  }
+  //#endregion
 
   //#region new / update permission
 
@@ -119,6 +147,7 @@ export class RolesComponent {
   }
 
   toggleChip(permission: any): void {
+    this.roleForm.permissions = this.roleForm.permissions || [];
     const index = this.selectedItems.indexOf(permission);
     if (index > -1) {
       this.selectedItems.splice(index, 1);
@@ -136,7 +165,7 @@ export class RolesComponent {
   process() {
     if (!this.roleForm.name)
       return this.toastService.error('Please enter name');
-    else if (!this.roleForm.permissions.length)
+    else if (!this.roleForm.permissions?.length)
       return this.toastService.error('Please select at least one permission');
     this.isModalForUpdate ? this.updateRole() : this.createRole();
   }
@@ -149,38 +178,36 @@ export class RolesComponent {
       if (res.status === 201) {
         this.toastService.success(res.message);
         this.closeModal(true);
-        this.pushNewModuleToList(res.data);
+        this.pushNewRoleToList(res.data);
       }
       else
         this.toastService.info(res.message);
     }, err => {
-      console.log('err : ', err);
       this.submitting = false;
       this.toastService.error(err.error.message);
     })
   }
 
   // will push the recently created permission to the list without call the API
-  pushNewModuleToList(permission: any) {
-    this.roles.push(permission);
-    this.prepareRoles();
+  pushNewRoleToList(role: any) {
+    this.roles = [...this.roles, role];
+    this.forceLoadState.setForceLoadModerators(true);
   }
 
   updateRole() {
-    this.role.updateRole(this.roleForm).subscribe((res: any) => {
-      console.log('res : ', res);
-      if (res.status === 201) {
-        this.toastService.success(res.message);
-        this.closeModal(true);
-        this.getRoles();
-      }
-      else {
-        this.toastService.info(res.message);
-      }
-    }, err => {
-      console.log('err : ', err);
-      this.toastService.error(err.error.message);
-    })
+    // this.role.updateRole(this.roleForm).subscribe((res: any) => {
+    //   console.log('res : ', res);
+    //   if (res.status === 201) {
+    //     this.toastService.success(res.message);
+    //     this.closeModal(true);
+    //   }
+    //   else {
+    //     this.toastService.info(res.message);
+    //   }
+    // }, err => {
+    //   console.log('err : ', err);
+    //   this.toastService.error(err.error.message);
+    // })
   }
 
   clearForm() {

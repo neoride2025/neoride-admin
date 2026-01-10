@@ -4,6 +4,7 @@
 :root {
   --cui-primary: #{$primary};
   --cui-primary-text: #{$primary-text-emphasis};
+  --cui-secondary: #{$secondary};
   --cui-success: #{$success};
   --cui-info: #{$info};
   --cui-warning: #{$warning};
@@ -26,6 +27,10 @@
   --font-48: #{$font48};
   --font-64: #{$font64};
   --font-72: #{$font72};
+
+  --common-border-radius: #{$commonBorderRadius};
+
+  --input-height: #{$inputHeight};
 }
 
 body {

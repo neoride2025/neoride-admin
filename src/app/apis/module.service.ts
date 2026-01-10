@@ -15,12 +15,12 @@ export class ModuleAPIService {
         this.authUrl = environment.apiURL + 'admin/';
     }
 
-    createModule(module: any) {
-        return this.httpClient.post(this.authUrl + 'create-module', module);
+    createModule(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-module', payload);
     }
 
-    updateModule(module: any) {
-        return this.httpClient.put(this.authUrl + 'update-role', module);
+    updateModule(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `modules/${id}`, payload);
     }
 
     getAllModules() {
@@ -31,5 +31,21 @@ export class ModuleAPIService {
         return this.httpClient.get(this.authUrl + 'grouped-permissions');
     }
 
+    deleteModule(id: string) {
+        return this.httpClient.delete(this.authUrl + `modules/${id}`);
+    }
+
+    // Module Type related
+    createModuleType(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-module-type', payload);
+    }
+
+    updateModuleType(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `module-types/${id}`, payload);
+    }
+
+    getAllModuleTypes() {
+        return this.httpClient.get(this.authUrl + 'module-types');
+    }
 
 }

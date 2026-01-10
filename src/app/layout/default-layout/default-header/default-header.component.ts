@@ -1,3 +1,4 @@
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -27,7 +28,11 @@ import { HelperService } from '../../../services/helper.service';
 @Component({
   selector: 'app-default-header',
   templateUrl: './default-header.component.html',
-  imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective, HeaderNavComponent, NavLinkDirective, RouterLink, NgTemplateOutlet, DropdownComponent, DropdownToggleDirective, AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
+  imports: [ContainerComponent, HeaderTogglerDirective, 
+    SidebarToggleDirective, IconDirective, HeaderNavComponent, NavLinkDirective,
+     RouterLink, NgTemplateOutlet, DropdownComponent, DropdownToggleDirective, AvatarComponent, 
+     ConfirmDialog,
+     DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
 })
 export class DefaultHeaderComponent extends HeaderComponent {
 

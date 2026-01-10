@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 
@@ -15,7 +15,7 @@ import {
 } from '@coreui/angular';
 
 import { DefaultFooterComponent, DefaultHeaderComponent } from './';
-import { navItems } from './_nav';
+import { AppSidebarService } from '../../services/app-sidebar.service';
 
 function isOverflown(element: HTMLElement) {
   return (
@@ -46,5 +46,6 @@ function isOverflown(element: HTMLElement) {
   ]
 })
 export class DefaultLayoutComponent {
-  public navItems = [...navItems];
+  public appSidebarService = inject(AppSidebarService);
+  public navItems = this.appSidebarService.buildNav();
 }

@@ -5,20 +5,23 @@ import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
 import { ProfileAPIService } from '../../apis/profile.service';
 import { LoaderComponent } from '../../global-components/loader/loader.component';
+import { NgClass } from '@angular/common';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [SharedModule, LoaderComponent],
+  imports: [SharedModule, LoaderComponent, NgClass],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class LoginComponent {
 
   loading = false;
   loaderMessage = '';
+  showPassword = false;
   loginForm: any = {
-    email: 'admin@neoride.in',
-    password: 'admin@neoride.in'
+    email: '',
+    password: ''
   };
 
 
@@ -38,7 +41,7 @@ export class LoginComponent {
 
   validateForm() {
     if (!this.loginForm.email)
-      return this.toastService.error('Please enter email');
+      return this.toastService.error('Please enter email', 'Login');
     else if (!this.helperService.validateEmail(this.loginForm.email))
       return this.toastService.error('Please enter valid email');
     else if (!this.loginForm.password)

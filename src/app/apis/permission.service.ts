@@ -15,12 +15,12 @@ export class PermissionAPIService {
         this.authUrl = environment.apiURL + 'admin/';
     }
 
-    createPermission(module: any) {
-        return this.httpClient.post(this.authUrl + 'create-permission', module);
+    createPermission(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-permission', payload);
     }
 
-    updatePermission(module: any) {
-        return this.httpClient.put(this.authUrl + 'update-permission', module);
+    updatePermission(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `permissions/${id}`, payload);
     }
 
     getAllPermissions() {

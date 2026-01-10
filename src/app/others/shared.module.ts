@@ -1,4 +1,3 @@
-import { CustomToastComponent } from './../global-components/custom-toast/custom-toast.component';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgStyle } from '@angular/common';
@@ -21,16 +20,18 @@ import {
 } from '@coreui/angular';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
   declarations: [ ],
   imports: [
+    ToastModule,
     FormsModule,
     CommonModule,
-    HttpClientModule,  CustomToastComponent,  ToastComponent, ToastBodyComponent, ToastHeaderComponent,
+    HttpClientModule,  ToastComponent, ToastBodyComponent, ToastHeaderComponent,
     ContainerComponent, RowComponent, ColComponent, CardGroupComponent, CardComponent, CardBodyComponent, FormDirective, InputGroupComponent, InputGroupTextDirective, IconDirective, FormControlDirective, ButtonDirective, NgStyle
   ],
-  exports: [CustomToastComponent, FormsModule, HttpClientModule, ContainerComponent, RowComponent, ColComponent, CardGroupComponent, CardComponent, CardBodyComponent, FormDirective, InputGroupComponent, InputGroupTextDirective, IconDirective, FormControlDirective, ButtonDirective, NgStyle],
+  exports: [FormsModule, HttpClientModule, ContainerComponent, RowComponent, ColComponent, CardGroupComponent, CardComponent, CardBodyComponent, FormDirective, InputGroupComponent, InputGroupTextDirective, IconDirective, FormControlDirective, ButtonDirective, NgStyle],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SharedModule { }

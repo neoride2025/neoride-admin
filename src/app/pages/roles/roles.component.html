@@ -1,75 +1,197 @@
 @if (loading || submitting) {
 <app-loader [message]="loaderMessage"></app-loader>
 } @if(!loading) {
-<div class="flex-space mb-3">
-  <h5 class="">Roles</h5>
-  <button class="float-end" cButton color="primary" [cModalToggle]="roleModal.id">Add Role</button>
-</div>
-<table cTable responsive>
-  <thead>
+<!-- Table starting -->
+<p-table
+  #dt
+  [value]="roles"
+  dataKey="_id"
+  [paginator]="true"
+  showGridlines
+  [rows]="5"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [globalFilterFields]="['name', 'email', 'role.name', 'status']"
+  filterDisplay="menu"
+>
+  <!-- Global Search -->
+  <ng-template pTemplate="caption">
+    <div class="flex-top-center gap-2">
+      <h5 class="mb-0">Roles</h5>
+      <input
+        pInputText
+        type="text"
+        placeholder="Global search"
+        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+        class="ms-auto"
+      />
+      <button pButton size="small" [cModalToggle]="roleModal.id">
+        <i class="pi pi-plus" pButtonIcon></i>
+        <span pButtonLabel>New</span>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Header -->
+  <ng-template pTemplate="header">
     <tr>
-      <th>#</th>
-      <th>Name</th>
-      <th>Total Permissions</th>
-      <th>Created By</th>
-      <th>Created On</th>
-      <th>Status</th>
-      <th>Action</th>
+      <!-- Role Name -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Name</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="name"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Total Permissions allowed for this Role -->
+      <th style="width: 220px">
+        <div class="flex-space">
+          <h6>Total Permissions</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="permissions.length"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Created By -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created By</h6>
+          <p-columnFilter
+            field="createdBy.name"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="moderators"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="name"
+              >
+                <ng-template let-moderator #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ moderator.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Created On -->
+      <th style="width: 200px">
+        <div class="flex-space">
+          <h6>Created On</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="date"
+            field="createdAt"
+            display="menu"
+          ></p-columnFilter>
+        </div>
+      </th>
+      <!-- Role Active Status -->
+      <th style="width: 120px">
+        <div class="flex-space">
+          <h6>Status</h6>
+          <p-columnFilter
+            field="isActive"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="statuses"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="value"
+              >
+                <ng-template let-status #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ status.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Role Actions -->
+      <th style="width: 200px">
+        <h6>Actions</h6>
+      </th>
     </tr>
-  </thead>
-  @if(paginatedData.length > 0) {
-  <tbody>
-    @for (role of paginatedData; track $index) {
+  </ng-template>
+
+  <!-- Body -->
+  <ng-template pTemplate="body" let-role let-index="rowIndex">
     <tr>
-      <td>{{ (currentPage - 1) * pageSize + $index + 1 }}</td>
-      <td>{{ role.name }}</td>
+      <td class="text-truncate" [title]="role.name">{{ role.name }}</td>
       <td>{{ role.permissions.length }}</td>
       <td>
-        {{ role.createdBy?.name }}
-        @if (role.createdBy?.role) {
-        <span
-          ><c-badge color="primary">{{ role.createdBy?.role.name }}</c-badge></span
-        >
-        }
+        <div class="flex-top-center gap-2">
+          <h6 class="text-truncate w-max-60" [title]="role.createdBy?.name">{{ role.createdBy?.name }}</h6>
+          @if (role.createdBy?.role) {
+          <p-badge [value]="role.createdBy?.role.name" badgeSize="small" />
+          }
+        </div>
       </td>
       <td>
         <span>{{ role.createdAt | date : "mediumDate" }} </span>
         <span>{{ role.createdAt | date : "shortTime" }}</span>
       </td>
       <td>
-        <c-form-check [switch]="true">
-          <input cFormCheckInput [checked]="role.isActive" type="checkbox" [disabled]="role.isSystemRole" />
+        <c-form-check [switch]="true" sizing="xl">
+          <input
+            cFormCheckInput
+            [checked]="role.isActive"
+            [(ngModel)]="role.isActive"
+            [disabled]="role.isSystemRole"
+            type="checkbox"
+            (change)="getRoleChangedStatus(role)"
+          />
         </c-form-check>
       </td>
-      <td class="d-flex gap-4">
-        <button cButton color="info" size="sm">Update</button>
-        <button cButton color="danger" size="sm" [disabled]="role.isSystemRole">Delete</button>
+      <td class="d-flex gap-3">
+        <p-button label="Update" severity="info" size="small" />
+        <p-button
+          label="Delete"
+          severity="danger"
+          size="small"
+          [disabled]="role.isSystemRole"
+          (click)="roleDeleteConfirmation(role, index)"
+        />
       </td>
     </tr>
-    }
-  </tbody>
-  } @if (paginatedData.length === 0) {
-  <tbody>
+  </ng-template>
+
+  <!-- No Data template -->
+  <ng-template #emptymessage>
     <tr>
-      <td colspan="100%" class="text-center py-4">No Modules found</td>
+      <td colspan="6">No roles found.</td>
     </tr>
-  </tbody>
-  }
-</table>
-} @if(!loading && paginatedData.length > 0) {
-<c-pagination align="center">
-  <li class="pagination-item" cPageItem [disabled]="currentPage === 1">
-    <a cPageLink class="pointer" (click)="changePage(currentPage - 1)">Prev</a>
-  </li>
-  @for (_ of pagesArray; track $index) {
-  <li class="pagination-item" cPageItem [active]="currentPage === $index + 1">
-    <a cPageLink class="pointer" (click)="changePage($index + 1)">{{ $index + 1 }}</a>
-  </li>
-  }
-  <li class="pagination-item" cPageItem [disabled]="currentPage === totalPages">
-    <a cPageLink class="pointer" (click)="changePage(currentPage + 1)">Next</a>
-  </li>
-</c-pagination>
+  </ng-template>
+</p-table>
 }
 <c-modal #roleModal backdrop="static" size="xl" alignment="center" id="roleModal" [(visible)]="showModal">
   <c-modal-header>
@@ -131,7 +253,7 @@
     </c-row>
   </c-modal-body>
   <c-modal-footer>
-    <button (click)="closeModal(true)" cButton color="secondary">Close</button>
-    <button cButton color="primary" (click)="process()">{{ isModalForUpdate ? "Update" : "Create" }}</button>
+    <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
+    <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
   </c-modal-footer>
 </c-modal>

@@ -32,10 +32,13 @@
                     cFormControl
                     placeholder="Password"
                     name="password"
-                    type="password"
+                    [type]="showPassword ? 'text' : 'password'"
                     [(ngModel)]="loginForm.password"
                     (keyup.enter)="login()"
                   />
+                  <button cButton color="secondary" id="button-addon2" type="button" variant="outline" (click)="showPassword = !showPassword">
+                    <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'" pButtonIcon></i>
+                  </button>
                 </c-input-group>
                 <c-row>
                   <c-col xs="6">

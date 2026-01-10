@@ -1,18 +1,44 @@
-import { Component, inject } from '@angular/core';
-import { TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective, FormCheckComponent, FormCheckInputDirective, BadgeComponent } from '@coreui/angular';
+import { GlobalAPIService } from './../../apis/global.service';
+import { Component, inject, ViewChild } from '@angular/core';
 import { HelperService } from '../../services/helper.service';
 import { ToastService } from '../../services/toast.service';
 import { SharedModule } from '../../others/shared.module';
 import { ModeratorAPIService } from '../../apis/moderator.service';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RoleAPIService } from '../../apis/role.service';
+import { Table, TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ButtonModule } from 'primeng/button';
+import { ToggleButton } from 'primeng/togglebutton';
+
+import {
+  FormCheckComponent,
+  FormCheckInputDirective,
+  FormControlDirective,
+  FormDirective,
+  FormLabelDirective,
+  FormSelectDirective,
+  ModalBodyComponent,
+  ModalComponent,
+  ModalFooterComponent,
+  ModalHeaderComponent,
+  ModalTitleDirective,
+  ModalToggleDirective
+} from '@coreui/angular';
+import { LoaderComponent } from '../../global-components/loader/loader.component';
+import { Badge } from 'primeng/badge';
+import { ForceLoadState } from '../../signals/force-load.state';
 
 @Component({
   selector: 'app-moderators',
-  imports: [SharedModule,
-    TableModule, PaginationModule, PageItemDirective, PageLinkDirective, PaginationComponent, ButtonDirective, ModalToggleDirective, ModalToggleDirective, ModalComponent,
-    ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, DatePipe, BadgeComponent,
-    FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormSelectDirective, FormLabelDirective],
+  imports: [
+    SharedModule, DatePipe, LoaderComponent, CommonModule,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective,
+    ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
+  ],
   templateUrl: './moderators.component.html',
   styleUrl: './moderators.component.scss',
 })
@@ -23,123 +49,148 @@ export class ModeratorsComponent {
   toastService = inject(ToastService);
   moderator = inject(ModeratorAPIService);
   role = inject(RoleAPIService);
+  global = inject(GlobalAPIService);
+  forceLoadState = inject(ForceLoadState);
 
   // common things
   config: any = this.helperService.config;
   userInfo: any = this.helperService.getDataFromSession('userInfo');
   loading = false;
   loaderMessage = '';
+  forceLoadModerators = this.forceLoadState.forceLoadModerators;
 
   // table & list
+  @ViewChild('dt') table!: Table;
   moderators: any[] = [];
-  paginatedData: any[] = [];
-  currentPage = 1;
-  pageSize = 5;
-  totalPages = 0;
+  statuses = [{ name: 'Active', value: 1 }, { name: 'Inactive', value: 0 }];
 
   // new / update permission
-  showModal = false;
-  submitting = false;
   isModalForUpdate = false;
   roles: any[] = [];
-  moderatorForm = {
-    name: '',
-    email: '',
-    mobile: '',
-    password: '',
-    role: '',
-    description: '',
-    isSystemUser: false,
-  }
+  showModal = false;
+  submitting = false;
+  moderatorForm: any = {};
 
   ngOnInit() {
-    this.getModerators();
-    this.getRoles();
+    this.getModeratorsComponentData();
     this.helperService.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
 
-  getRoles() {
-    this.roles = [];
-    this.role.getRoles().subscribe((res: any) => {
-      if (res.status === 200)
-        this.roles = res.data;
-    })
-  }
-
-  getModerators() {
-    this.moderators = [];
+  getModeratorsComponentData() {
+    this.roles = this.moderators = [];
     this.loading = true;
-    this.loaderMessage = 'Loading moderators...';
-    this.moderator.getModerators().subscribe((res: any) => {
+    this.loaderMessage = 'Loading Moderators...';
+    this.global.getModeratorsComponentData(this.forceLoadModerators()).subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200) {
-        this.moderators = res.data;
-        this.prepareModerators();
+        this.roles = res.data.roles;
+        this.moderators = res.data.moderators;
+        this.forceLoadModerators() ? this.forceLoadState.clearModeratorsForceLoad() : '';
       }
       else
-        this.toastService.error(res.message);
+        this.toastService.error(res.message, 'Roles & Moderators');
     }, err => {
       this.loading = false;
       this.toastService.error(err.error.message);
     })
   }
 
-  prepareModerators() {
-    this.totalPages = Math.ceil(this.moderators.length / this.pageSize);
-    this.updatePagination();
+  // #region Table action functions
+
+  getModeratorChangedStatus(moderator: any) {
+    this.moderator.updateModerator(moderator._id, { isActive: moderator.isActive }).subscribe((res: any) => {
+      if (res.status === 200) {
+        this.toastService.success(res.message, 'Moderator Status');
+        this.forceLoadState.setForceLoadRoles(true);
+        this.forceLoadState.setForceLoadModules(true);
+        this.forceLoadState.setForceLoadPermissions(true);
+      }
+      else {
+        this.toastService.info(res.message, 'Moderator Status');
+        moderator.isActive = !moderator.isActive;
+      }
+    }, err => {
+      this.toastService.error(err.error.message, 'Moderator Status');
+      moderator.isActive = !moderator.isActive;
+    })
   }
 
-  updatePagination() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedData = this.moderators.slice(start, end);
+  moderatorDeleteConfirmation(moderatorData: any, index: number) {
+    const alertPayload = {
+      header: 'Delete Moderator',
+      message: 'Are you sure you want to delete this role?',
+      acceptBtnLabel: 'Delete',
+      rejectBtnLabel: 'Cancel'
+    }
+    this.helperService.actionConfirmation(alertPayload, (accepted: any) => {
+      if (accepted)
+        this.deleteModerator(moderatorData._id, index);
+    })
   }
 
-  changePage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePagination();
+  deleteModerator(id: string, index: number) {
+    this.moderator.deleteModerator(id).subscribe((res: any) => {
+      if (res.status === 200) {
+        this.toastService.success(res.message);
+        this.moderators.splice(index, 1);
+        this.table.reset();
+        this.forceLoadState.setForceLoadRoles(true);
+        this.forceLoadState.setForceLoadModules(true);
+        this.forceLoadState.setForceLoadPermissions(true);
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      this.toastService.error(err.error.message);
+    })
   }
 
-  get pagesArray() {
-    return Array.from({ length: this.totalPages });
+  // #endregion
+
+  // #region new / update permission
+
+  // function to copy the password to clipboard
+  copyPassword() {
+    const el = document.createElement('input');
+    el.value = this.moderatorForm.password;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    this.toastService.info('Password copied to clipboard', 'Copy Password');
   }
 
-  //#region Table action functions
-
-  onCheckboxChange(permission: any) {
-    permission.isActive = !permission.isActive;
+  generateNewPassword() {
+    this.moderatorForm.password = this.helperService.generatePassword();
   }
-
-  //#endregion
-
-  //#region new / update permission
 
   process() {
-    this.isModalForUpdate ? this.updatePermission() : this.createPermission();
+    this.isModalForUpdate ? this.updateModerator() : this.createModerator();
   }
 
   validateForm() {
     if (!this.moderatorForm.name)
-      return this.toastService.error('Please enter moderator name');
+      return this.toastService.error('Please enter moderator name', 'Create Moderator');
     else if (!this.moderatorForm.email)
-      return this.toastService.error('Please enter email');
+      return this.toastService.error('Please enter email', 'Create Moderator');
     else if (!this.helperService.validateEmail(this.moderatorForm.email))
-      return this.toastService.error('Please enter valid email');
+      return this.toastService.error('Please enter valid email', 'Create Moderator');
     else if (!this.moderatorForm.password)
-      return this.toastService.error('Please enter password');
+      return this.toastService.error('Please enter password', 'Create Moderator');
     else if (this.moderatorForm.password.length < 6)
-      return this.toastService.error('Password should be minimum 6 characters');
+      return this.toastService.error('Password should be minimum 6 characters', 'Create Moderator');
     else if (!this.moderatorForm.role)
-      return this.toastService.error('Please select role');
+      return this.toastService.error('Please select role', 'Create Moderator');
     return true;
   }
 
-  createPermission() {
+  createModerator() {
     const isFormValid = this.validateForm();
     if (!isFormValid) return;
+    if (this.moderatorForm.mobile)
+      this.moderatorForm.mobile = this.moderatorForm.mobile.toString(); // convert mobile number to string
     this.submitting = true;
     this.loaderMessage = 'Creating moderator...';
     this.moderator.createModerator(this.moderatorForm).subscribe((res: any) => {
@@ -152,31 +203,24 @@ export class ModeratorsComponent {
       else
         this.toastService.info(res.message);
     }, err => {
-      console.log('err : ', err);
       this.submitting = false;
       this.toastService.error(err.error.message);
     })
   }
+
   // will push the recently created permission to the list without call the API
   pushNewModuleToList(permission: any) {
     this.moderators.push(permission);
-    this.prepareModerators();
   }
 
-  updatePermission() {
-
+  updateModerator() {
+    this.forceLoadState.setForceLoadRoles(true);
+    this.forceLoadState.setForceLoadModules(true);
+    this.forceLoadState.setForceLoadPermissions(true);
   }
 
   clearForm() {
-    this.moderatorForm = {
-      name: '',
-      email: '',
-      mobile: '',
-      password: '',
-      role: '',
-      description: '',
-      isSystemUser: false,
-    };
+    this.moderatorForm = {};
   }
 
   closeModal(clearForm?: boolean) {
@@ -184,5 +228,7 @@ export class ModeratorsComponent {
     this.showModal = false;
   }
 
-  //#endregion
+
+  // #endregion
+
 }

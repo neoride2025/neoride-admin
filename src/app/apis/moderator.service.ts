@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { of, tap } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -8,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class ModeratorAPIService {
 
     authUrl = '';
+    private cache: any;
 
     constructor(
         private httpClient: HttpClient
@@ -15,16 +17,25 @@ export class ModeratorAPIService {
         this.authUrl = environment.apiURL + 'admin/';
     }
 
-    createModerator(moderator: any) {
-        return this.httpClient.post(this.authUrl + 'create-moderator', moderator);
+    createModerator(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-moderator', payload);
     }
 
-    updateModerator(moderator: any) {
-        return this.httpClient.put(this.authUrl + 'update-moderator', moderator);
+    updateModerator(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `moderators/${id}`, payload);
     }
 
-    getModerators() {
-        return this.httpClient.get(this.authUrl + 'moderators');
+    deleteModerator(id: string) {
+        return this.httpClient.delete(this.authUrl + `moderators/${id}`);
+    }
+
+    getModerators(force = false) {
+        if (this.cache && !force)
+            return of(this.cache);
+
+        return this.httpClient.get(this.authUrl + 'moderators').pipe(
+            tap(data => (this.cache = data))
+        );
     }
 
 }

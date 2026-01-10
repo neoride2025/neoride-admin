@@ -31,6 +31,15 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'users',
+        loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent),
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['VIEW_USERS'],
+          isFallback: true
+        }
+      },
+      {
         path: 'moderators',
         loadComponent: () => import('./pages/moderators/moderators.component').then(m => m.ModeratorsComponent),
         canActivate: [permissionGuard],
