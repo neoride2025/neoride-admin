@@ -9,7 +9,6 @@ import { LoaderComponent } from '../../global-components/loader/loader.component
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
-import { ToggleButton } from 'primeng/togglebutton';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Badge } from 'primeng/badge';
@@ -20,7 +19,7 @@ import { ForceLoadState } from '../../signals/force-load.state';
   selector: 'app-permissions',
   imports: [
     SharedModule, LoaderComponent, CommonModule,
-    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, Badge,
     ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
     FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective
   ],

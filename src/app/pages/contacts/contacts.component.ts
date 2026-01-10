@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
-import { CalloutComponent, ColComponent, RowComponent } from '@coreui/angular';
 import { ContactAPIService } from '../../apis/contact.service';
-import { DatePipe } from '@angular/common';
 import { HelperService } from '../../services/helper.service';
 import { PanelModule } from 'primeng/panel';
 import { AvatarModule } from 'primeng/avatar';
@@ -10,7 +8,7 @@ import { MenuModule } from 'primeng/menu';
 
 @Component({
   selector: 'app-contacts',
-  imports: [CalloutComponent, RowComponent, ColComponent, DatePipe, PanelModule, AvatarModule, ButtonModule, MenuModule],
+  imports: [PanelModule, AvatarModule, ButtonModule, MenuModule],
   templateUrl: './contacts.component.html',
   styleUrl: './contacts.component.scss',
 })

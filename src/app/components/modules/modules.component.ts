@@ -10,7 +10,6 @@ import { Badge } from 'primeng/badge';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
-import { ToggleButton } from 'primeng/togglebutton';
 import { ButtonModule } from 'primeng/button';
 import { Table, TableModule } from 'primeng/table';
 import { GlobalAPIService } from '../../apis/global.service';
@@ -20,7 +19,7 @@ import { ForceLoadState } from '../../signals/force-load.state';
   selector: 'app-modules',
   imports: [
     SharedModule, LoaderComponent, DatePipe,
-    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, Badge,
     ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
     FormCheckComponent, FormCheckInputDirective, FormSelectDirective, FormControlDirective, FormDirective, FormLabelDirective],
   templateUrl: './modules.component.html',

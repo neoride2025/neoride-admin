@@ -11,7 +11,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
-import { ToggleButton } from 'primeng/togglebutton';
 
 import {
   FormCheckComponent,
@@ -35,7 +34,7 @@ import { ForceLoadState } from '../../signals/force-load.state';
   selector: 'app-moderators',
   imports: [
     SharedModule, DatePipe, LoaderComponent, CommonModule,
-    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, ToggleButton, Badge,
+    TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, Badge,
     FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective,
     ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
   ],
