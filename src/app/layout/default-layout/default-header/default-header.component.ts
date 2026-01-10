@@ -17,7 +17,6 @@ import {
   HeaderComponent,
   HeaderNavComponent,
   HeaderTogglerDirective,
-  NavLinkDirective,
   SidebarToggleDirective
 } from '@coreui/angular';
 
@@ -29,7 +28,7 @@ import { HelperService } from '../../../services/helper.service';
   selector: 'app-default-header',
   templateUrl: './default-header.component.html',
   imports: [ContainerComponent, HeaderTogglerDirective, 
-    SidebarToggleDirective, IconDirective, HeaderNavComponent, NavLinkDirective,
+    SidebarToggleDirective, IconDirective, HeaderNavComponent,
      RouterLink, NgTemplateOutlet, DropdownComponent, DropdownToggleDirective, AvatarComponent, 
      ConfirmDialog,
      DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
