@@ -47,6 +47,39 @@
           />
         </div>
       </th>
+      <!-- Module Type -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <div class="flex-top-center gap-1">
+            <h6>Type</h6>
+            <!-- <p-button [cModalToggle]="typeModuleModal.id" icon="pi pi-plus-circle" variant="text" /> -->
+          </div>
+          <p-columnFilter
+            field="type.key"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="moduleTypes"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="key"
+              >
+                <ng-template let-type #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ type.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
       <!-- Created By -->
       <th style="width: 250px">
         <div class="flex-space">
@@ -131,6 +164,7 @@
   <ng-template pTemplate="body" let-module let-index="rowIndex">
     <tr>
       <td>{{ module.name }}</td>
+      <td>{{ module.type?.name }}</td>
       <td>
         <div class="flex-top-center gap-2">
           <span>{{ module.createdBy?.name }}</span>
@@ -170,11 +204,12 @@
   <!-- no data template -->
   <ng-template #emptymessage>
     <tr>
-      <td colspan="5">No modules found.</td>
+      <td colspan="6">No modules found.</td>
     </tr>
   </ng-template>
 </p-table>
 }
+<!-- New/Update Module -->
 <c-modal #moduleModal backdrop="static" alignment="center" id="moduleModal" [(visible)]="showModal">
   <c-modal-header>
     <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Module</h5>
@@ -184,6 +219,15 @@
       <div class="mb-2">
         <label cLabel for="moduleName">Name</label>
         <input cFormControl id="moduleName" name="moduleName" type="text" [(ngModel)]="moduleForm.name" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="moduleType">Type</label>
+        <select cSelect id="moduleType" name="moduleType" [(ngModel)]="moduleForm.type">
+          <option>Select Module Type</option>
+          @for(type of moduleTypes; track type) {
+          <option [value]="type._id">{{ type.name }}</option>
+          }
+        </select>
       </div>
       <div class="mb-2">
         <label cLabel for="roleDescription">Description</label>
@@ -212,5 +256,45 @@
   <c-modal-footer>
     <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
     <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
+  </c-modal-footer>
+</c-modal>
+<!-- New/Update Module Type -->
+<c-modal #typeModuleModal backdrop="static" alignment="center" id="typeModuleModal" [(visible)]="showTypeModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isTypeModalForUpdate ? "Update" : "New" }} Module Type</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <div class="mb-2">
+        <label cLabel for="moduleName">Name</label>
+        <input cFormControl id="moduleName" name="moduleName" type="text" [(ngModel)]="typeModuleForm.name" />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="roleDescription">Description</label>
+        <textarea
+          cFormControl
+          id="moduleDescription"
+          name="moduleDescription"
+          rows="6"
+          [(ngModel)]="typeModuleForm.description"
+        ></textarea>
+      </div>
+      <div class="mb-2">
+        <c-form-check class="d-flex gap-2">
+          <input
+            cFormCheckInput
+            id="systemModule"
+            name="systemModule"
+            type="checkbox"
+            [(ngModel)]="typeModuleForm.isSystemType"
+          />
+          <label cFormCheckLabel for="systemModule">Keep this as System Type</label>
+        </c-form-check>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <p-button (click)="closeTypeModal(true)" label="Close" severity="secondary" size="small" />
+    <p-button (click)="processType()" [label]="isTypeModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
   </c-modal-footer>
 </c-modal>

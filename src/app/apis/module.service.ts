@@ -35,4 +35,17 @@ export class ModuleAPIService {
         return this.httpClient.delete(this.authUrl + `modules/${id}`);
     }
 
+    // Module Type related
+    createModuleType(payload: any) {
+        return this.httpClient.post(this.authUrl + 'create-module-type', payload);
+    }
+
+    updateModuleType(id: string, payload: any) {
+        return this.httpClient.patch(this.authUrl + `module-types/${id}`, payload);
+    }
+
+    getAllModuleTypes() {
+        return this.httpClient.get(this.authUrl + 'module-types');
+    }
+
 }

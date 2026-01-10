@@ -139,7 +139,6 @@ export class PermissionsComponent {
       else
         this.toastService.error(res.message);
     }, err => {
-      console.log('err : ', err);
       this.submitting = false;
       this.toastService.error(err.error.message);
     })

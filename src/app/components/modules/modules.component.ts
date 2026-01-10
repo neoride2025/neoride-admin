@@ -52,17 +52,19 @@ export class ModulesComponent {
   selectedModerator?: string;
   statuses = this.helperService.getStatusItems();
 
-  // new / update permission
+  // new / update module
   @ViewChild('moduleModal') moduleModal!: any;
   showModal = false;
   submitting = false;
   isModalForUpdate = false;
-  moduleForm = {
-    name: '',
-    key: '',
-    description: '',
-    isSystemModule: false
-  }
+  moduleForm: any = {};
+
+  // new / update module type
+  @ViewChild('moduleModal') typeModuleModal!: any;
+  moduleTypes: any[] = [];
+  showTypeModal = false;
+  isTypeModalForUpdate = false;
+  typeModuleForm: any = {};
 
   ngOnInit() {
     this.getModulesComponentData();
@@ -80,6 +82,7 @@ export class ModulesComponent {
       if (res.status === 200) {
         this.modules = res.data.modules;
         this.moderators = res.data.moderators;
+        this.moduleTypes = res.data.moduleTypes;
         this.forceLoadState.clearModulesForceLoad();
       }
       else
@@ -147,12 +150,12 @@ export class ModulesComponent {
   }
 
   createModule() {
-    const key = this.helperService.toCapsWithUnderscore(this.moduleForm.name);
-    this.moduleForm.key = key;
     if (!this.moduleForm.name)
       return this.toastService.error('Please enter name');
     else if (this.moduleForm.name.length < this.config.nameMinLength)
       return this.toastService.error('Name should be minimum 3 characters');
+    const key = this.helperService.toCapsWithUnderscore(this.moduleForm.name);
+    this.moduleForm.key = key;
     this.submitting = true;
     this.loaderMessage = 'Creating module...';
     this.module.createModule(this.moduleForm).subscribe((res: any) => {
@@ -171,8 +174,9 @@ export class ModulesComponent {
   }
 
   // will push the recently created module to the list without call the API
-  pushNewModuleToList(module: any) {
-    this.modules.push(module); // this will add the new module to the list also send through signal
+  pushNewModuleToList(moduleData: any) {
+    this.modules.push(moduleData); // this will add the new module to the list also send through signal
+    this.updateModule();
   }
 
   updateModule() {
@@ -181,17 +185,52 @@ export class ModulesComponent {
   }
 
   clearForm() {
-    this.moduleForm = {
-      name: '',
-      description: '',
-      key: '',
-      isSystemModule: false
-    };
+    this.moduleForm = {};
   }
 
   closeModal(clearForm?: boolean) {
     clearForm ? this.clearForm() : '';
     this.showModal = false;
+  }
+
+  //#endregion
+
+  //#region new / update module type
+
+  processType() {
+    !this.isTypeModalForUpdate ? this.createModuleType() : '';
+  }
+
+  createModuleType() {
+    if (!this.typeModuleForm.name)
+      return this.toastService.error('Please enter name');
+    else if (this.typeModuleForm.name.length < this.config.nameMinLength)
+      return this.toastService.error('Name should be minimum 3 characters');
+    const key = this.helperService.toCapsWithUnderscore(this.typeModuleForm.name);
+    this.typeModuleForm.key = key;
+    this.submitting = true;
+    this.loaderMessage = 'Creating module type...';
+    this.module.createModuleType(this.typeModuleForm).subscribe((res: any) => {
+      this.submitting = false;
+      if (res.status === 201) {
+        this.toastService.success(res.message);
+        this.closeTypeModal(true);
+      }
+      else
+        this.toastService.error(res.message);
+    }, err => {
+      this.submitting = false;
+      this.toastService.error(err.error.message);
+    })
+  }
+
+  clearTypeForm() {
+    this.typeModuleForm = {};
+  }
+
+  closeTypeModal(clearForm?: boolean) {
+    clearForm ? this.clearTypeForm() : '';
+    this.showTypeModal = false;
   }
 
   //#endregion
