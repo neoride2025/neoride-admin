@@ -1,4 +1,5 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, inject, untracked } from '@angular/core';
+import { PERMISSIONS } from './../../../core/constants/permissions.constants';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { FormDirective, FormControlDirective, FormLabelDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormSelectDirective } from '@coreui/angular';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,7 +13,6 @@ import { LoaderComponent } from 'src/app/global-components/loader/loader.compone
 import { PermissionAPIService } from 'src/app/apis/permission.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { ForceLoadState } from 'src/app/signals/force-load.state';
 
 @Component({
   selector: 'app-permissions',
@@ -32,7 +32,6 @@ export class PermissionsComponent {
   helperService = inject(HelperService);
   toastService = inject(ToastService);
   permission = inject(PermissionAPIService);
-  forceLoadState = inject(ForceLoadState);
 
   // common things
   config: any = this.helperService.config;
@@ -40,10 +39,10 @@ export class PermissionsComponent {
   loading = false;
   allowedPermissions = this.userInfo.permissions;
   canDo: any = {
-    create: this.allowedPermissions.includes('ADMIN_PERMISSIONS_CREATE'),
-    update: this.allowedPermissions.includes('ADMIN_PERMISSIONS_UPDATE'),
-    delete: this.allowedPermissions.includes('ADMIN_PERMISSIONS_DELETE'),
-    export: this.allowedPermissions.includes('ADMIN_PERMISSIONS_EXPORT')
+    create: this.allowedPermissions.includes(PERMISSIONS.ADMIN_PERMISSIONS_CREATE),
+    update: this.allowedPermissions.includes(PERMISSIONS.ADMIN_PERMISSIONS_UPDATE),
+    delete: this.allowedPermissions.includes(PERMISSIONS.ADMIN_PERMISSIONS_DELETE),
+    export: this.allowedPermissions.includes(PERMISSIONS.ADMIN_PERMISSIONS_EXPORT)
   }
 
   // table & list
@@ -56,12 +55,7 @@ export class PermissionsComponent {
   submitting = false;
   isModalForUpdate = false;
   modules: any[] = [];
-  permissionForm = {
-    label: '',
-    description: '',
-    isSystemPermission: false,
-    module: ''
-  }
+  permissionForm: any = {};
 
   ngOnInit() {
     this.getPermissions();
@@ -78,7 +72,6 @@ export class PermissionsComponent {
         this.permissions = res.data;
       else
         this.toastService.error(res.message);
-      console.log('permissions : ', this.permissions);
     }, err => {
       this.loading = false;
       this.toastService.error(err.error.message);
@@ -89,12 +82,13 @@ export class PermissionsComponent {
 
   statusChange(event: any, permission: any) {
     if (!this.canDo.update) {
-      event.preventDefault(); return;
+      event.preventDefault();
+      return;
     }
     if (permission.isActive)
       this.getPermissionChangedStatus(event, permission);
     else
-      this.updateStatus(permission);
+      this.updateStatus(permission, event);
   }
 
   getPermissionChangedStatus(event: any, permission: any) {
@@ -107,21 +101,23 @@ export class PermissionsComponent {
     }
     this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
-      this.updateStatus(permission);
+      this.updateStatus(permission, event);
     })
   }
 
-  updateStatus(permission: any) {
+  updateStatus(permission: any, event: any) {
     this.permission.updatePermissionStatus(permission._id, { isActive: !permission.isActive }).subscribe((res: any) => {
       if (res.status === 200) {
-        permission.isActive = !permission.isActive;
         this.toastService.success(res.message, 'Permission Status');
+        permission.isActive = !permission.isActive;
       }
-      else
+      else {
         this.toastService.info(res.message, 'Permission Status');
+        event.target.checked = false;
+      }
     }, err => {
       this.toastService.error(err.error.message, 'Permission Status');
-      permission.isActive = !permission.isActive;
+      event.target.checked = false;
     })
   }
 
@@ -171,7 +167,7 @@ export class PermissionsComponent {
       if (res.status === 201) {
         this.toastService.success(res.message);
         this.closeModal(true);
-        this.pushNewModuleToList(res.data);
+        this.pushNewPermissionToList(res.data);
       }
       else
         this.toastService.error(res.message);
@@ -182,7 +178,7 @@ export class PermissionsComponent {
   }
 
   // will push the recently created permission to the list without call the API
-  pushNewModuleToList(permission: any) {
+  pushNewPermissionToList(permission: any) {
     this.permissions.splice(0, 0, permission); // this will add the new permission to the list;
   }
 
@@ -191,12 +187,7 @@ export class PermissionsComponent {
   }
 
   clearForm() {
-    this.permissionForm = {
-      label: '',
-      description: '',
-      isSystemPermission: false,
-      module: ''
-    };
+    this.permissionForm = {};
   }
 
   closeModal(clearForm?: boolean) {

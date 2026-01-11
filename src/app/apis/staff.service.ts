@@ -14,6 +14,7 @@ export class AdminAPIService {
         this.adminUrl = environment.apiURL + 'staff/';
     }
 
+    // for menu render purpose
     getNavigationMenuItems() {
         return this.httpClient.get(this.adminUrl + 'menu-navigation', { withCredentials: true });
     }

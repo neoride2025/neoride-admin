@@ -1,36 +1,40 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { CacheService } from '../services/cache.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class PermissionAPIService {
 
-    adminUrl = ''
-    constructor(
-        private httpClient: HttpClient
-    ) {
-        this.adminUrl = environment.apiURL + 'admin/';
+    // injectable dependencies
+    private httpClient = inject(HttpClient);
+    private cacheService = inject(CacheService);
+
+    permissionUrl = '';
+
+    constructor() {
+        this.permissionUrl = environment.apiURL + 'admin/permissions';
     }
 
-    getPermissions() {
-        return this.httpClient.get(this.adminUrl + 'permissions', { withCredentials: true });
+    getPermissions(force: boolean = false) {
+        return this.cacheService.getCached('permissions', () => this.httpClient.get(this.permissionUrl, { withCredentials: true }), force);
     }
 
     createPermission(payload: any) {
-        return this.httpClient.post(this.adminUrl + 'permissions', payload, { withCredentials: true });
+        return this.httpClient.post(this.permissionUrl, payload, { withCredentials: true });
     }
 
     updatePermission(id: string, payload: any) {
-        return this.httpClient.patch(this.adminUrl + `permissions/${id}`, payload, { withCredentials: true });
+        return this.httpClient.patch(this.permissionUrl + `/${id}`, payload, { withCredentials: true });
     }
 
     updatePermissionStatus(id: string, payload: any) {
-        return this.httpClient.patch(this.adminUrl + `permission-status/${id}`, payload, { withCredentials: true });
+        return this.httpClient.patch(this.permissionUrl + `/status/${id}`, payload, { withCredentials: true });
     }
 
     deletePermission(id: string) {
-        return this.httpClient.delete(this.adminUrl + `permissions/${id}`, { withCredentials: true });
+        return this.httpClient.delete(this.permissionUrl + `/${id}`, { withCredentials: true });
     }
 }
