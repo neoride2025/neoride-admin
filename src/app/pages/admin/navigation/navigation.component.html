@@ -138,7 +138,12 @@
   <!-- Body -->
   <ng-template pTemplate="body" let-navigationItem let-index="rowIndex">
     <tr>
-      <td class="text-truncate" [title]="navigationItem.title">{{ navigationItem.title }}</td>
+      <td class="text-truncate" [title]="navigationItem.title">
+        @if(navigationItem.type === 'MENU'){
+        <svg cIcon class="me-2" [name]="navigationItem.icon" size="lg"></svg>
+        }
+        {{ navigationItem.title }}
+      </td>
       <td class="text-truncate" [title]="navigationItem.route">{{ navigationItem.route || "-" }}</td>
       <td class="text-truncate" [title]="navigationItem.requiredPermission">
         {{ navigationItem.requiredPermission || "-" }}
@@ -171,7 +176,7 @@
   <!-- No Data template -->
   <ng-template #emptymessage>
     <tr>
-      <td colspan="5">No navigation items found.</td>
+      <td colspan="6">No navigation items found.</td>
     </tr>
   </ng-template>
 </p-table>

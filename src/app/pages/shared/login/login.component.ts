@@ -1,5 +1,4 @@
-import { AdminAPIService } from '../../../apis/staff.service';
-import { ProfileAPIService } from './../../../apis/profile.service';
+import { AdminAPIService } from '../../../apis/admin.service';
 import { AuthAPIService } from '../../../apis/auth.service';
 import { SharedModule } from '../../../others/shared.module';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
