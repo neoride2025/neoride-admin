@@ -31,31 +31,33 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    const token = sessionStorage.getItem('accessToken'); //  single source of truth
-
-    const authReq = token
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-      : req;
-
-    return next.handle(authReq).pipe(
+       return next.handle(req).pipe(
       catchError((err: HttpErrorResponse) => {
 
+        /* 🔴 FORBIDDEN → LOGOUT IMMEDIATELY */
+        if (err.status === 403) {
+          this.auth.logout();
+          return throwError(() => err);
+        }
+
+        /* ❌ NOT A REFRESH CASE */
         if (!this.shouldRefreshToken(req, err)) {
           return throwError(() => err);
         }
 
-        // 🔄 First request triggers refresh
+        /* 🔄 FIRST 401 TRIGGERS REFRESH */
         if (!this.isRefreshing) {
           this.isRefreshing = true;
           this.refreshSubject.next(null);
 
           return this.auth.refreshToken().pipe(
-            switchMap((res: any) => {
+            switchMap(() => {
+              // retry original request AFTER refresh
               return next.handle(req);
             }),
             catchError((refreshErr) => {
               this.refreshSubject.error(refreshErr);
-              // this.auth.logout();
+              this.auth.logout();
               return throwError(() => refreshErr);
             }),
             finalize(() => {
@@ -64,16 +66,12 @@ export class AuthInterceptor implements HttpInterceptor {
           );
         }
 
-        //  Requests wait here until refresh finishes
+        /* ⏳ QUEUE REQUESTS WHILE REFRESHING */
         return this.refreshSubject.pipe(
           filter(token => token !== null),
           take(1),
           switchMap(token =>
-            next.handle(
-              req.clone({
-                setHeaders: { Authorization: `Bearer ${token}` }
-              })
-            )
+            next.handle(req)
           )
         );
       })
