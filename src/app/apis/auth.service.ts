@@ -19,28 +19,14 @@ export class AuthAPIService {
         this.authUrl = environment.apiURL + 'auth/';
     }
 
-    isAdmin() {
-        const isAdmin = this.helperService.getDataFromSession('userInfo')?.role === 'ADMIN' ? true : false;
-        return isAdmin;
-    }
-
     getUserPermissions() {
         this.userPermissions = this.helperService.getDataFromSession('permissions');
         return this.userPermissions;
     }
 
     // token related things
-    getAccessToken() {
-        return this.accessToken;
-    }
-
     refreshToken() {
         return this.httpClient.post(this.authUrl + 'refresh-token', {}, { withCredentials: true });
-    }
-
-    setAccessToken(token: string) {
-        sessionStorage.setItem('accessToken', token);
-        this.accessToken = token;
     }
 
     // auth related API's
@@ -60,8 +46,6 @@ export class AuthAPIService {
     }
 
     clearClientState(logoutMessage?: string) {
-        // 2️⃣ Remove access token
-        this.accessToken = null;
         this.helperService.logout(logoutMessage);
     }
 

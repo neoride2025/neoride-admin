@@ -130,6 +130,11 @@ export class HelperService {
     return colors[index];
   }
 
+  // instead of settimeout we can use this function
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   // function to generate a random strong password for the moderator
   generatePassword(length: number = 12): string {
     const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

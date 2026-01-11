@@ -1,0 +1,202 @@
+@if (loading || submitting) {
+<app-loader></app-loader>
+} @else {
+<!-- Table starting -->
+<p-table
+  #dt
+  [value]="permissions"
+  dataKey="_id"
+  [paginator]="true"
+  showGridlines
+  [rows]="10"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [globalFilterFields]="['label', 'isActive', 'key']"
+  filterDisplay="menu"
+>
+  <!-- Global Search -->
+  <ng-template pTemplate="caption">
+    <div class="flex-top-center gap-2">
+      <h5 class="mb-0">Permissions</h5>
+      <input
+        pInputText
+        type="text"
+        placeholder="Global search"
+        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+        class="ms-auto"
+      />
+      @if(canDo.create){
+      <button pButton size="small" [cModalToggle]="permissionModal.id">
+        <i class="pi pi-plus" pButtonIcon></i>
+        <span pButtonLabel>New</span>
+      </button>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Header -->
+  <ng-template pTemplate="header">
+    <tr>
+      <!-- Permission Label -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Label</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="label"
+            matchMode="contains"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Permission Key -->
+      <th style="width: 220px">
+        <div class="flex-space">
+          <h6>Key</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="key"
+            matchMode="contains"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Permission's Domain -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Domain</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="domain"
+            matchMode="contains"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Permission Active Status -->
+      <th style="width: 120px">
+        <div class="flex-space">
+          <h6>Status</h6>
+          <p-columnFilter
+            field="isActive"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="statuses"
+                placeholder="Any"
+                (onChange)="filter($event.value)"
+                optionLabel="name"
+                optionValue="value"
+              >
+                <ng-template let-status #item>
+                  <div class="flex items-center gap-2">
+                    <span>{{ status.name }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </div>
+      </th>
+      <!-- Permission Actions -->
+      @if(canDo.update || canDo.delete){
+      <th style="width: 200px">
+        <h6>Actions</h6>
+      </th>
+      }
+    </tr>
+  </ng-template>
+
+  <!-- Body -->
+  <ng-template pTemplate="body" let-permission let-index="rowIndex">
+    <tr>
+      <td class="text-truncate" [title]="permission.label">{{ permission.label }}</td>
+      <td class="text-truncate" [title]="permission.key">{{ permission.key }}</td>
+      <td class="text-truncate" [title]="permission.domain">{{ permission.domain }}</td>
+      <td>
+        <c-form-check [switch]="true" sizing="xl">
+          <input
+            cFormCheckInput
+            [checked]="permission.isActive"
+            type="checkbox"
+            (click)="statusChange($event, permission)"
+            [disabled]="!canDo.update"
+          />
+        </c-form-check>
+      </td>
+      @if(canDo.update || canDo.delete){
+      <td class="d-flex gap-3">
+        @if(canDo.update){
+        <p-button label="Update" severity="info" size="small" />
+        } @if(canDo.delete){
+        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(permission._id, index)" />
+        }
+      </td>
+      }
+    </tr>
+  </ng-template>
+
+  <!-- No Data template -->
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="5">No permissions found.</td>
+    </tr>
+  </ng-template>
+</p-table>
+}
+<!-- New/Update modal -->
+<c-modal #permissionModal backdrop="static" alignment="center" id="permissionModal" [(visible)]="showModal">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Permission</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm>
+      <!-- <div class="mb-2">
+        <label cLabel for="inputLabel-1">Module</label>
+        <select aria-label="Default select example" cSelect name="permissionModule" [(ngModel)]="permissionForm.module">
+          <option>Select Module</option>
+          @for (module of modules; track module) {
+          <option [value]="module._id">{{ module.name }}</option>
+          }
+        </select>
+      </div> -->
+      <div class="mb-2">
+        <label cLabel for="permissionLabel">Label</label>
+        <input
+          cFormControl
+          id="permissionLabel"
+          type="text"
+          name="permissionLabel"
+          [(ngModel)]="permissionForm.label"
+        />
+      </div>
+      <div class="mb-2">
+        <label cLabel for="roleDescription">Description</label>
+        <textarea
+          cFormControl
+          id="roleDescription"
+          name="roleDescription"
+          rows="10"
+          [(ngModel)]="permissionForm.description"
+        ></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
+    <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
+  </c-modal-footer>
+</c-modal>

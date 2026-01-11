@@ -1,38 +1,40 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { CacheService } from '../services/cache.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RoleAPIService {
 
-    authUrl = '';
+    // injectable dependencies
+    private httpClient = inject(HttpClient);
+    private cacheService = inject(CacheService);
 
-    constructor(
-        private httpClient: HttpClient
-    ) {
-        this.authUrl = environment.apiURL + 'admin/';
+    roleUrl = '';
+
+    constructor() {
+        this.roleUrl = environment.apiURL + 'admin/roles';
+    }
+
+    getRoles(force: boolean = false) {
+        return this.cacheService.getCached('roles', () => this.httpClient.get(this.roleUrl, { withCredentials: true }), force);
     }
 
     createRole(payload: any) {
-        return this.httpClient.post(this.authUrl + 'create-role', payload);
+        return this.httpClient.post(this.roleUrl, payload, { withCredentials: true });
     }
 
     updateRole(id: string, payload: any) {
-        return this.httpClient.patch(this.authUrl + `roles/${id}`, payload);
+        return this.httpClient.patch(this.roleUrl + `/${id}`, payload, { withCredentials: true });
     }
 
-    getRoles() {
-        return this.httpClient.get(this.authUrl + 'roles');
-    }
-
-    getPermissionsByGrouped() {
-        return this.httpClient.get(this.authUrl + 'grouped-permissions');
+    updateRoleStatus(id: string, payload: any) {
+        return this.httpClient.patch(this.roleUrl + `/status/${id}`, payload, { withCredentials: true });
     }
 
     deleteRole(id: string) {
-        return this.httpClient.delete(this.authUrl + `roles/${id}`);
+        return this.httpClient.delete(this.roleUrl + `/${id}`, { withCredentials: true });
     }
-
 }

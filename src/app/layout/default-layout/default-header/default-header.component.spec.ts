@@ -14,7 +14,7 @@ import {
   SidebarModule
 } from '@coreui/angular';
 import { IconModule, IconSetService } from '@coreui/icons-angular';
-import { iconSubset } from '../../../icons/icon-subset';
+import { iconSubset } from '../../../core/icons/icon-subset';
 import { DefaultHeaderComponent } from './default-header.component';
 
 describe('DefaultHeaderComponent', () => {
