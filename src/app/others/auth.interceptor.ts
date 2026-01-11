@@ -31,19 +31,19 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-       return next.handle(req).pipe(
+    return next.handle(req).pipe(
       catchError((err: HttpErrorResponse) => {
 
         /* 🔴 FORBIDDEN → LOGOUT IMMEDIATELY */
         if (err.status === 403) {
+          if (req.url.includes('login')) return throwError(() => err); // don't logout on login failure
           this.auth.logout();
           return throwError(() => err);
         }
 
         /* ❌ NOT A REFRESH CASE */
-        if (!this.shouldRefreshToken(req, err)) {
+        if (!this.shouldRefreshToken(req, err))
           return throwError(() => err);
-        }
 
         /* 🔄 FIRST 401 TRIGGERS REFRESH */
         if (!this.isRefreshing) {

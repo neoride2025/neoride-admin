@@ -121,7 +121,7 @@
   </ng-template>
 
   <!-- Body -->
-  <ng-template pTemplate="body" let-permission>
+  <ng-template pTemplate="body" let-permission let-index="rowIndex">
     <tr>
       <td class="text-truncate" [title]="permission.label">{{ permission.label }}</td>
       <td class="text-truncate" [title]="permission.key">{{ permission.key }}</td>
@@ -142,7 +142,7 @@
         @if(canDo.update){
         <p-button label="Update" severity="info" size="small" />
         } @if(canDo.delete){
-        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(permission._id)" />
+        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(permission._id, index)" />
         }
       </td>
       }
@@ -164,7 +164,7 @@
   </c-modal-header>
   <c-modal-body>
     <form cForm>
-      <div class="mb-2">
+      <!-- <div class="mb-2">
         <label cLabel for="inputLabel-1">Module</label>
         <select aria-label="Default select example" cSelect name="permissionModule" [(ngModel)]="permissionForm.module">
           <option>Select Module</option>
@@ -172,7 +172,7 @@
           <option [value]="module._id">{{ module.name }}</option>
           }
         </select>
-      </div>
+      </div> -->
       <div class="mb-2">
         <label cLabel for="permissionLabel">Label</label>
         <input

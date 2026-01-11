@@ -1,11 +1,11 @@
 import { PERMISSIONS } from './../../../core/constants/permissions.constants';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
 import { FormDirective, FormControlDirective, FormLabelDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormSelectDirective } from '@coreui/angular';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Badge } from 'primeng/badge';
 import { SharedModule } from 'src/app/others/shared.module';
@@ -46,15 +46,14 @@ export class PermissionsComponent {
   }
 
   // table & list
+  @ViewChild('dt') table!: Table;
   permissions: any[] = [];
-  moderators: any[] = [];
   statuses = this.helperService.getStatusItems();
 
   // new / update permission
   showModal = false;
   submitting = false;
   isModalForUpdate = false;
-  modules: any[] = [];
   permissionForm: any = {};
 
   ngOnInit() {
@@ -88,7 +87,7 @@ export class PermissionsComponent {
     if (permission.isActive)
       this.getPermissionChangedStatus(event, permission);
     else
-      this.updateStatus(permission, event);
+      this.updateStatus(event, permission);
   }
 
   getPermissionChangedStatus(event: any, permission: any) {
@@ -101,11 +100,11 @@ export class PermissionsComponent {
     }
     this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
-      this.updateStatus(permission, event);
+      this.updateStatus(event, permission);
     })
   }
 
-  updateStatus(permission: any, event: any) {
+  updateStatus(event: any, permission: any) {
     this.permission.updatePermissionStatus(permission._id, { isActive: !permission.isActive }).subscribe((res: any) => {
       if (res.status === 200) {
         this.toastService.success(res.message, 'Permission Status');
@@ -121,7 +120,7 @@ export class PermissionsComponent {
     })
   }
 
-  confirmDelete(permissionId: any) {
+  confirmDelete(permissionId: any, index: number) {
     if (!this.canDo.delete) return;
     const alertPayload = {
       header: 'Permission Deletion',
@@ -131,15 +130,16 @@ export class PermissionsComponent {
     }
     this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
-      this.deletePermission(permissionId)
+      this.deletePermission(permissionId, index)
     })
   }
 
-  deletePermission(permissionId: any) {
+  deletePermission(permissionId: any, index: number) {
     this.permission.deletePermission(permissionId).subscribe((res: any) => {
       if (res.status === 200) {
         this.toastService.success(res.message, 'Permission Deletion');
-        this.getPermissions();
+        this.permissions.splice(index, 1); // remove the deleted permission from the list
+        this.table.reset(); // reset the table to reflect changes (pagination)
       }
       else
         this.toastService.error(res.message, 'Permission Deletion');
