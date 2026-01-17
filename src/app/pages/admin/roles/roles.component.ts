@@ -1,6 +1,6 @@
 import { RoleAPIService } from './../../../apis/role.service';
 import { PERMISSIONS } from './../../../core/constants/permissions.constants';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
+import { Component, inject, signal, ViewChild } from '@angular/core';
 import { FormDirective, FormControlDirective, FormLabelDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormSelectDirective } from '@coreui/angular';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -9,10 +9,10 @@ import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Badge } from 'primeng/badge';
-import { SharedModule } from 'src/app/others/shared.module';
-import { LoaderComponent } from 'src/app/global-components/loader/loader.component';
-import { HelperService } from 'src/app/services/helper.service';
-import { ToastService } from 'src/app/services/toast.service';
+import { SharedModule } from '../../../others/shared.module';
+import { LoaderComponent } from '../../../global-components/loader/loader.component';
+import { HelperService } from '../../../services/helper.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-roles',
@@ -28,13 +28,13 @@ import { ToastService } from 'src/app/services/toast.service';
 export class RolesComponent {
 
   // injectable dependencies
-  helperService = inject(HelperService);
+  helper = inject(HelperService);
   toastService = inject(ToastService);
   role = inject(RoleAPIService);
 
   // common things
-  config: any = this.helperService.config;
-  userInfo: any = this.helperService.getDataFromSession('userInfo');
+  config: any = this.helper.config;
+  userInfo: any = this.helper.getDataFromSession('userInfo');
   loading = false;
   allowedPermissions = this.userInfo.permissions;
   canDo: any = {
@@ -47,7 +47,7 @@ export class RolesComponent {
   // table & list
   @ViewChild('dt') table!: Table;
   roles: any[] = [];
-  statuses = this.helperService.getStatusItems();
+  statuses = this.helper.getStatusItems();
 
   // new / update role
   showModal = false;
@@ -57,7 +57,7 @@ export class RolesComponent {
 
   ngOnInit() {
     this.getRoles();
-    this.helperService.closeModalIfOpened(() => {
+    this.helper.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
@@ -97,7 +97,7 @@ export class RolesComponent {
       acceptBtnLabel: 'Deactivate',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.updateStatus(event, role);
     })
@@ -127,7 +127,7 @@ export class RolesComponent {
       acceptBtnLabel: 'Delete',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.deleteRole(roleId, index)
     })

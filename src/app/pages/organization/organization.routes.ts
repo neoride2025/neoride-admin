@@ -1,5 +1,7 @@
+import { PERMISSIONS } from '../../core/constants/permissions.constants';
 import { STAFF_TYPE_OPTIONS } from '../../core/constants/staff-type.constants';
 import { Routes } from '@angular/router';
+import { permissionGuard } from '../../guards/permission.guard';
 
 export const ORGANIZATION_ROUTES: Routes = [
     {
@@ -16,8 +18,10 @@ export const ORGANIZATION_ROUTES: Routes = [
             // Overview
             {
                 path: 'dashboard',
-                loadComponent: () => import('./dashboard/dashboard.component').then(c => c.DashboardComponent)
-            },
+                loadComponent: () => import('./dashboard/dashboard.component').then(c => c.DashboardComponent),
+                canActivate: [permissionGuard],
+                data: { permissions: [PERMISSIONS.ORG_DASHBOARD_VIEW] }
+            }
         ]
     }
 ];

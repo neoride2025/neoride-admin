@@ -17,7 +17,7 @@ import { NgClass } from '@angular/common';
 export class LoginComponent {
 
   // injectable dependencies
-  private helperService = inject(HelperService);
+  private helper = inject(HelperService);
   private auth = inject(AuthAPIService);
   private toastService = inject(ToastService);
   private admin = inject(AdminAPIService);
@@ -37,7 +37,7 @@ export class LoginComponent {
   validateForm() {
     if (!this.loginForm.email)
       return this.toastService.error('Please enter email', 'Login');
-    else if (!this.helperService.validateEmail(this.loginForm.email))
+    else if (!this.helper.validateEmail(this.loginForm.email))
       return this.toastService.error('Please enter valid email');
     else if (!this.loginForm.password)
       return this.toastService.error('Please enter password');
@@ -59,8 +59,8 @@ export class LoginComponent {
           this.loading = false;
           return;
         }
-        this.helperService.setDataToSession('userInfo', res.data);
-        this.helperService.setDataToSession('permissions', res.data.permissions);
+        this.helper.setDataToSession('userInfo', res.data);
+        this.helper.setDataToSession('permissions', res.data.permissions);
         this.getNavigationItems(ROLE);
         this.toastService.success(res.message);
       }
@@ -73,12 +73,11 @@ export class LoginComponent {
   }
 
   getNavigationItems(role: string) {
-    this.loaderMessage = 'Getting profile details...';
     this.admin.getNavigationMenuItems().subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200) {
-        this.helperService.setDataToSession('navigationItems', res.data);
-        this.helperService.goTo(role.toLowerCase());
+        this.helper.setDataToSession('navigationItems', res.data);
+        this.helper.goTo(role.toLowerCase());
       }
     }, err => {
       this.loading = false;

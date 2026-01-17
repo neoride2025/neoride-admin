@@ -8,11 +8,11 @@ import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Badge } from 'primeng/badge';
-import { SharedModule } from 'src/app/others/shared.module';
-import { LoaderComponent } from 'src/app/global-components/loader/loader.component';
-import { PermissionAPIService } from 'src/app/apis/permission.service';
-import { HelperService } from 'src/app/services/helper.service';
-import { ToastService } from 'src/app/services/toast.service';
+import { LoaderComponent } from '../../../global-components/loader/loader.component';
+import { HelperService } from '../../../services/helper.service';
+import { ToastService } from '../../../services/toast.service';
+import { PermissionAPIService } from './../../../apis/permission.service';
+import { SharedModule } from '../../../others/shared.module';
 
 @Component({
   selector: 'app-permissions',
@@ -29,13 +29,13 @@ import { ToastService } from 'src/app/services/toast.service';
 export class PermissionsComponent {
 
   // injectable dependencies
-  helperService = inject(HelperService);
+  helper = inject(HelperService);
   toastService = inject(ToastService);
   permission = inject(PermissionAPIService);
 
   // common things
-  config: any = this.helperService.config;
-  userInfo: any = this.helperService.getDataFromSession('userInfo');
+  config: any = this.helper.config;
+  userInfo: any = this.helper.getDataFromSession('userInfo');
   loading = false;
   allowedPermissions = this.userInfo.permissions;
   canDo: any = {
@@ -48,7 +48,7 @@ export class PermissionsComponent {
   // table & list
   @ViewChild('dt') table!: Table;
   permissions: any[] = [];
-  statuses = this.helperService.getStatusItems();
+  statuses = this.helper.getStatusItems();
 
   // new / update permission
   showModal = false;
@@ -58,7 +58,7 @@ export class PermissionsComponent {
 
   ngOnInit() {
     this.getPermissions();
-    this.helperService.closeModalIfOpened(() => {
+    this.helper.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
@@ -98,7 +98,7 @@ export class PermissionsComponent {
       acceptBtnLabel: 'Deactivate',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.updateStatus(event, permission);
     })
@@ -128,7 +128,7 @@ export class PermissionsComponent {
       acceptBtnLabel: 'Delete',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.deletePermission(permissionId, index)
     })
@@ -196,5 +196,5 @@ export class PermissionsComponent {
   }
 
   //#endregion
-  
+
 }

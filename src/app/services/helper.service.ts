@@ -80,24 +80,6 @@ export class HelperService {
       .toUpperCase();
   }
 
-  // function to prepare key from label/name text
-  labelToPermissionKey(label: unknown): string {
-    if (typeof label !== 'string') return '';
-
-    const parts = label
-      .trim()
-      .replace(/[^a-zA-Z\s]/g, '') // remove symbols
-      .split(/\s+/);
-
-    if (parts.length < 2) return '';
-
-    const action = parts[0];
-    const module = parts.slice(1).join('_');
-
-    return `${module}_${action}`.toUpperCase();
-  }
-
-
   // function to close any modal when routing started
   closeModalIfOpened(callBack: any) {
     this.router.events.subscribe(event => {
