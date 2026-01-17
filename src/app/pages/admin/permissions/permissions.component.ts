@@ -14,11 +14,13 @@ import { ToastService } from '../../../services/toast.service';
 import { PermissionAPIService } from './../../../apis/permission.service';
 import { SharedModule } from '../../../others/shared.module';
 import { SortEvent } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+
 
 @Component({
   selector: 'app-permissions',
   imports: [
-    SharedModule, LoaderComponent, CommonModule,
+    SharedModule, LoaderComponent, CommonModule, TooltipModule,
     TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, Badge,
     ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
     FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective

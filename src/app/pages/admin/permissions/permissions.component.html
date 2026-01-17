@@ -134,7 +134,7 @@
   <!-- Body -->
   <ng-template pTemplate="body" let-permission let-index="rowIndex">
     <tr>
-      <td class="text-truncate" [title]="permission.label">{{ permission.label }}</td>
+      <td class="text-truncate" [pTooltip]="permission.description">{{ permission.label }}</td>
       <td class="text-truncate" [title]="permission.key">{{ permission.key }}</td>
       <td class="text-truncate" [title]="permission.domain">{{ permission.domain }}</td>
       <td>
