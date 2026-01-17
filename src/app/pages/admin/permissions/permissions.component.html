@@ -12,6 +12,8 @@
   [rowsPerPageOptions]="[5, 10, 25]"
   [globalFilterFields]="['label', 'isActive', 'key']"
   filterDisplay="menu"
+  (sortFunction)="customSort($event)"
+  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
@@ -39,7 +41,10 @@
       <!-- Permission Label -->
       <th style="width: 180px" pSortableColumn="label">
         <div class="flex-space">
-          <h6>Label</h6>
+          <div class="d-flex gap-3">
+            <h6>Label</h6>
+            <p-sortIcon field="label"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -52,9 +57,12 @@
         </div>
       </th>
       <!-- Permission Key -->
-      <th style="width: 220px">
+      <th style="width: 220px" pSortableColumn="key">
         <div class="flex-space">
-          <h6>Key</h6>
+          <div class="d-flex gap-3">
+            <h6>Key</h6>
+            <p-sortIcon field="key"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -67,9 +75,12 @@
         </div>
       </th>
       <!-- Permission's Domain -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="domain">
         <div class="flex-space">
-          <h6>Domain</h6>
+          <div class="d-flex gap-3">
+            <h6>Domain</h6>
+            <p-sortIcon field="domain"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"

@@ -12,6 +12,8 @@
   [rowsPerPageOptions]="[5, 10, 25]"
   [globalFilterFields]="['title', 'route', 'requiredPermission', 'type', 'isActive']"
   filterDisplay="menu"
+  (sortFunction)="customSort($event)"
+  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
@@ -37,9 +39,12 @@
   <ng-template pTemplate="header">
     <tr>
       <!-- Navigation Title -->
-      <th style="width: 150px">
+      <th style="width: 150px" pSortableColumn="title">
         <div class="flex-space">
-          <h6>Title</h6>
+          <div class="d-flex gap-3">
+            <h6>Title</h6>
+            <p-sortIcon field="title"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -52,9 +57,12 @@
         </div>
       </th>
       <!-- Route -->
-      <th style="width: 160px">
+      <th style="width: 160px" pSortableColumn="route">
         <div class="flex-space">
-          <h6>Route</h6>
+          <div class="d-flex gap-3">
+            <h6>Route</h6>
+            <p-sortIcon field="route"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -67,9 +75,12 @@
         </div>
       </th>
       <!-- Navigation Required Permission -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="requiredPermission">
         <div class="flex-space">
-          <h6>Permission</h6>
+          <div class="d-flex gap-3">
+            <h6>Permission</h6>
+            <p-sortIcon field="requiredPermission"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -82,9 +93,12 @@
         </div>
       </th>
       <!-- Navigation Type -->
-      <th style="width: 100px">
+      <th style="width: 100px" pSortableColumn="type">
         <div class="flex-space">
-          <h6>Type</h6>
+          <div class="d-flex gap-3">
+            <h6>Type</h6>
+            <p-sortIcon field="type"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"

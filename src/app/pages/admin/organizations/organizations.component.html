@@ -10,8 +10,10 @@
   showGridlines
   [rows]="10"
   [rowsPerPageOptions]="[5, 10, 25]"
-  [globalFilterFields]="['name', 'email', 'mobile', 'isActive', 'ownerStaff']"
+  [globalFilterFields]="['name', 'email', 'mobile', 'isActive', 'ownerStaff.name']"
   filterDisplay="menu"
+  (sortFunction)="customSort($event)"
+  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
@@ -37,9 +39,12 @@
   <ng-template pTemplate="header">
     <tr>
       <!-- Organization Name -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="name">
         <div class="flex-space">
-          <h6>Name</h6>
+          <div class="d-flex gap-3">
+            <h6>Name</h6>
+            <p-sortIcon field="name"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -52,24 +57,30 @@
         </div>
       </th>
       <!-- Organization code -->
-      <th style="width: 120px">
+      <th style="width: 120px" pSortableColumn="code">
         <div class="flex-space">
-          <h6>Code</h6>
+          <div class="d-flex gap-3">
+            <h6>Code</h6>
+            <p-sortIcon field="code"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="email"
+            field="code"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
       <!-- Organization Email -->
-      <th style="width: 200px">
+      <th style="width: 200px" pSortableColumn="email">
         <div class="flex-space">
-          <h6>Email</h6>
+          <div class="d-flex gap-3">
+            <h6>Email</h6>
+            <p-sortIcon field="email"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -82,15 +93,18 @@
         </div>
       </th>
       <!-- Organization's OwnerStaff -->
-      <th style="width: 150px">
+      <th style="width: 150px" pSortableColumn="ownerStaff.name">
         <div class="flex-space">
-          <h6>Manager</h6>
+          <div class="d-flex gap-3">
+            <h6>Manager</h6>
+            <p-sortIcon field="ownerStaff.name"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="role.name"
+            field="ownerStaff.name"
             matchMode="contains"
             display="menu"
           />
@@ -141,7 +155,7 @@
       <td class="text-truncate" [title]="organization.name">{{ organization.name }}</td>
       <td class="text-truncate" [title]="organization.code">{{ organization.code }}</td>
       <td class="text-truncate" [title]="organization.email">{{ organization.email }}</td>
-      <td class="text-truncate" [title]="organization.ownerStaff">{{ organization.ownerStaff || "-" }}</td>
+      <td class="text-truncate" [title]="organization.ownerStaff?.name">{{ organization.ownerStaff?.name || "-" }}</td>
       <td>
         <c-form-check [switch]="true" sizing="xl">
           <input

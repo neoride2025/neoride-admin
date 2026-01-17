@@ -31,10 +31,11 @@ export class HelperService {
   }
 
   // clear the session data & navigate to login
-  logout(logoutMessage?: string) {
+  logout(logoutMessage?: string, showToast?: boolean) {
     sessionStorage.clear();
     logoutMessage = logoutMessage ? logoutMessage : 'Logout Successfully';
-    this.toastService.success(logoutMessage);
+    if (showToast)
+      this.toastService.success(logoutMessage);
     this.goTo('login');
   }
 
@@ -179,6 +180,11 @@ export class HelperService {
         callback(0);
       },
     });
+  }
+
+  // function to split the field key by . and return the value (ownerStaff.name)
+  resolveFieldData(data: any, field: string): any {
+    return field.split('.').reduce((obj, key) => obj?.[key], data);
   }
 
 

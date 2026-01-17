@@ -136,7 +136,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   logout() {
     const userInfo = this.helperService.getDataFromSession('userInfo');
-    this.auth.logout(userInfo._id);
+    this.auth.logout(userInfo._id, true);
   }
 
 }

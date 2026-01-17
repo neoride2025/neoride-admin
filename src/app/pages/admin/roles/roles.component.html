@@ -12,6 +12,8 @@
   [rowsPerPageOptions]="[5, 10, 25]"
   [globalFilterFields]="['name', 'isActive', 'key', 'scope']"
   filterDisplay="menu"
+  (sortFunction)="customSort($event)"
+  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
@@ -37,9 +39,12 @@
   <ng-template pTemplate="header">
     <tr>
       <!-- Role name -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="name">
         <div class="flex-space">
-          <h6>Name</h6>
+          <div class="d-flex gap-3">
+            <h6>Name</h6>
+            <p-sortIcon field="name"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -52,9 +57,12 @@
         </div>
       </th>
       <!-- Role Key -->
-      <th style="width: 220px">
+      <th style="width: 220px" pSortableColumn="key">
         <div class="flex-space">
-          <h6>Key</h6>
+          <div class="d-flex gap-3">
+            <h6>Key</h6>
+            <p-sortIcon field="key"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -67,9 +75,12 @@
         </div>
       </th>
       <!-- Role's Scope -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="scope">
         <div class="flex-space">
-          <h6>Scope</h6>
+          <div class="d-flex gap-3">
+            <h6>Scope</h6>
+            <p-sortIcon field="scope"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"

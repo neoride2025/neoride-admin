@@ -13,6 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { LoaderComponent } from '../../../global-components/loader/loader.component';
 import { SharedModule } from '../../../others/shared.module';
+import { SortEvent } from 'primeng/api';
 
 @Component({
   selector: 'app-organizations',
@@ -28,13 +29,13 @@ import { SharedModule } from '../../../others/shared.module';
 export class OrganizationsComponent {
 
   // injectable dependencies
-  helperService = inject(HelperService);
+  helper = inject(HelperService);
   toastService = inject(ToastService);
   organization = inject(OrganizationAPIService);
 
   // common things
-  config: any = this.helperService.config;
-  userInfo: any = this.helperService.getDataFromSession('userInfo');
+  config: any = this.helper.config;
+  userInfo: any = this.helper.getDataFromSession('userInfo');
   loading = false;
   allowedPermissions = this.userInfo.permissions;
   canDo: any = {
@@ -47,7 +48,9 @@ export class OrganizationsComponent {
   // table & list
   @ViewChild('dt') table!: Table;
   organizations: any[] = [];
-  statuses = this.helperService.getStatusItems();
+  statuses = this.helper.getStatusItems();
+  isSorted: any = null;
+  initialValue: any[] = [];
 
   // new / update organization
   showModal = false;
@@ -57,7 +60,7 @@ export class OrganizationsComponent {
 
   ngOnInit() {
     this.getOrganizations();
-    this.helperService.closeModalIfOpened(() => {
+    this.helper.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
@@ -66,8 +69,10 @@ export class OrganizationsComponent {
     this.loading = true;
     this.organization.getOrganizations().subscribe((res: any) => {
       this.loading = false;
-      if (res.status === 200)
+      if (res.status === 200) {
         this.organizations = res.data;
+        this.initialValue = [...this.organizations];
+      }
       else
         this.toastService.error(res.message);
     }, err => {
@@ -75,6 +80,41 @@ export class OrganizationsComponent {
       this.toastService.error(err.error.message);
     })
   }
+
+  //#region Table Sorting
+
+  customSort(event: SortEvent) {
+    if (this.isSorted == null || this.isSorted === undefined) {
+      this.isSorted = true;
+      this.sortTableData(event);
+    } else if (this.isSorted == true) {
+      this.isSorted = false;
+      this.sortTableData(event);
+    } else if (this.isSorted == false) {
+      this.isSorted = null;
+      this.organizations = [...this.initialValue];
+      this.table.reset();
+    }
+  }
+
+  sortTableData(event: any) {
+    const field = event.field;
+    event.data.sort((data1: { [x: string]: any; }, data2: { [x: string]: any; }) => {
+      const value1 = this.helper.resolveFieldData(data1, field);
+      const value2 = this.helper.resolveFieldData(data2, field);
+      let result = null;
+      if (value1 == null && value2 != null) result = -1;
+      else if (value1 != null && value2 == null) result = 1;
+      else if (value1 == null && value2 == null) result = 0;
+      else if (typeof value1 === 'string' && typeof value2 === 'string') result = value1.localeCompare(value2);
+      else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+
+      return event.order * result;
+    });
+  }
+
+  //#endregion
+
 
   //#region Table action functions
 
@@ -97,7 +137,7 @@ export class OrganizationsComponent {
       acceptBtnLabel: 'Deactivate',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.updateStatus(event, organization);
     })
@@ -127,7 +167,7 @@ export class OrganizationsComponent {
       acceptBtnLabel: 'Delete',
       rejectBtnLabel: 'Cancel'
     }
-    this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
+    this.helper.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
       this.deleteOrganization(organizationId, index)
     })

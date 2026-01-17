@@ -1,3 +1,4 @@
+import { NavigationAPIService } from './../../../apis/navigation.service';
 import { PERMISSIONS } from './../../../core/constants/permissions.constants';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, ViewChild } from '@angular/core';
 import { FormDirective, FormControlDirective, FormLabelDirective, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ModalToggleDirective, FormCheckComponent, FormCheckInputDirective, FormSelectDirective } from '@coreui/angular';
@@ -8,11 +9,11 @@ import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Badge } from 'primeng/badge';
-import { SharedModule } from 'src/app/others/shared.module';
-import { LoaderComponent } from 'src/app/global-components/loader/loader.component';
-import { NavigationAPIService } from 'src/app/apis/navigation.service';
-import { HelperService } from 'src/app/services/helper.service';
-import { ToastService } from 'src/app/services/toast.service';
+import { SharedModule } from '../../../others/shared.module';
+import { LoaderComponent } from '../../../global-components/loader/loader.component';
+import { HelperService } from '../../../services/helper.service';
+import { ToastService } from '../../../services/toast.service';
+import { SortEvent } from 'primeng/api';
 
 @Component({
   selector: 'app-navigation',
@@ -49,6 +50,8 @@ export class NavigationComponent {
   @ViewChild('dt') table!: Table;
   navigationItems: any[] = [];
   statuses = this.helperService.getStatusItems();
+  isSorted: any = null;
+  initialValue: any[] = [];
 
   // new / update navigation
   showModal = false;
@@ -67,16 +70,52 @@ export class NavigationComponent {
     this.loading = true;
     this.navigation.getNavigationItems().subscribe((res: any) => {
       this.loading = false;
-      if (res.status === 200)
+      if (res.status === 200) {
         this.navigationItems = res.data;
+        this.initialValue = [...this.navigationItems];
+      }
       else
         this.toastService.error(res.message);
-      console.log('navigationItems : ', this.navigationItems);
     }, err => {
       this.loading = false;
       this.toastService.error(err.error.message);
     })
   }
+
+
+  //#region Table Sorting
+
+  customSort(event: SortEvent) {
+    if (this.isSorted == null || this.isSorted === undefined) {
+      this.isSorted = true;
+      this.sortTableData(event);
+    } else if (this.isSorted == true) {
+      this.isSorted = false;
+      this.sortTableData(event);
+    } else if (this.isSorted == false) {
+      this.isSorted = null;
+      this.navigationItems = [...this.initialValue];
+      this.table.reset();
+    }
+  }
+
+  sortTableData(event: any) {
+    event.data.sort((data1: { [x: string]: any; }, data2: { [x: string]: any; }) => {
+      let value1 = data1[event.field];
+      let value2 = data2[event.field];
+      let result = null;
+      if (value1 == null && value2 != null) result = -1;
+      else if (value1 != null && value2 == null) result = 1;
+      else if (value1 == null && value2 == null) result = 0;
+      else if (typeof value1 === 'string' && typeof value2 === 'string') result = value1.localeCompare(value2);
+      else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+
+      return event.order * result;
+    });
+  }
+
+  //#endregion
+
 
   //#region Table action functions
 
