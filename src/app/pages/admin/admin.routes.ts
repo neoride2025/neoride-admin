@@ -13,10 +13,12 @@ export const ADMIN_ROUTES: Routes = [
                 redirectTo: 'dashboard',
                 pathMatch: 'full'
             },
+            // Overview
             {
                 path: 'dashboard',
                 loadComponent: () => import('./dashboard/dashboard.component').then(c => c.DashboardComponent)
             },
+            // Staff Management
             {
                 path: 'roles',
                 loadComponent: () => import('./roles/roles.component').then(c => c.RolesComponent)
@@ -32,6 +34,11 @@ export const ADMIN_ROUTES: Routes = [
             {
                 path: 'staffs',
                 loadComponent: () => import('./staffs/staffs.component').then(c => c.StaffsComponent)
+            },
+            // Organization Management
+            {
+                path: 'organizations',
+                loadComponent: () => import('./organizations/organizations.component').then(c => c.OrganizationsComponent)
             }
         ]
     }

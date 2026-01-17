@@ -4,19 +4,19 @@
 <!-- Table starting -->
 <p-table
   #dt
-  [value]="staffs"
+  [value]="organizations"
   dataKey="_id"
   [paginator]="true"
   showGridlines
   [rows]="10"
   [rowsPerPageOptions]="[5, 10, 25]"
-  [globalFilterFields]="['name', 'email', 'role', 'isActive', 'key']"
+  [globalFilterFields]="['name', 'email', 'mobile', 'isActive', 'ownerStaff']"
   filterDisplay="menu"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
     <div class="flex-top-center gap-2">
-      <h5 class="mb-0">Staffs</h5>
+      <h5 class="mb-0">Organizations</h5>
       <input
         pInputText
         type="text"
@@ -25,7 +25,7 @@
         class="ms-auto"
       />
       @if(canDo.create){
-      <button pButton size="small" [cModalToggle]="staffModal.id">
+      <button pButton size="small" [cModalToggle]="organizationModal.id">
         <i class="pi pi-plus" pButtonIcon></i>
         <span pButtonLabel>New</span>
       </button>
@@ -36,7 +36,7 @@
   <!-- Header -->
   <ng-template pTemplate="header">
     <tr>
-      <!-- Staff Name -->
+      <!-- Organization Name -->
       <th style="width: 180px">
         <div class="flex-space">
           <h6>Name</h6>
@@ -51,8 +51,23 @@
           />
         </div>
       </th>
-      <!-- Staff Email -->
-      <th style="width: 220px">
+      <!-- Organization code -->
+      <th style="width: 120px">
+        <div class="flex-space">
+          <h6>Code</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="email"
+            matchMode="contains"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Organization Email -->
+      <th style="width: 200px">
         <div class="flex-space">
           <h6>Email</h6>
           <p-columnFilter
@@ -66,10 +81,10 @@
           />
         </div>
       </th>
-      <!-- Staff's Role -->
-      <th style="width: 180px">
+      <!-- Organization's OwnerStaff -->
+      <th style="width: 150px">
         <div class="flex-space">
-          <h6>Role</h6>
+          <h6>Manager</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -81,7 +96,7 @@
           />
         </div>
       </th>
-      <!-- Staff Active Status -->
+      <!-- Organization Active Status -->
       <th style="width: 120px">
         <div class="flex-space">
           <h6>Status</h6>
@@ -119,36 +134,31 @@
       }
     </tr>
   </ng-template>
-  
+
   <!-- Body -->
-  <ng-template pTemplate="body" let-staff let-index="rowIndex">
+  <ng-template pTemplate="body" let-organization let-index="rowIndex">
     <tr>
-      <td class="text-truncate" [title]="staff.name">{{ staff.name }}</td>
-      <td class="text-truncate" [title]="staff.email">{{ staff.email }}</td>
-      <td class="text-truncate" [title]="staff.role.name">{{ staff.role.name }}</td>
+      <td class="text-truncate" [title]="organization.name">{{ organization.name }}</td>
+      <td class="text-truncate" [title]="organization.code">{{ organization.code }}</td>
+      <td class="text-truncate" [title]="organization.email">{{ organization.email }}</td>
+      <td class="text-truncate" [title]="organization.ownerStaff">{{ organization.ownerStaff || "-" }}</td>
       <td>
         <c-form-check [switch]="true" sizing="xl">
           <input
             cFormCheckInput
-            [checked]="staff.isActive"
+            [checked]="organization.isActive"
             type="checkbox"
-            (click)="statusChange($event, staff)"
-            [disabled]="!canDo.update || staff.isSystemUser"
+            (click)="statusChange($event, organization)"
+            [disabled]="!canDo.update"
           />
         </c-form-check>
       </td>
       @if(canDo.update || canDo.delete){
       <td class="d-flex gap-3">
         @if(canDo.update){
-        <p-button label="Update" severity="info" size="small" [disabled]="staff.isSystemUser" />
+        <p-button label="Update" severity="info" size="small" />
         } @if(canDo.delete){
-        <p-button
-          label="Delete"
-          severity="danger"
-          size="small"
-          [disabled]="staff.isSystemUser"
-          (click)="confirmDelete(staff._id, index)"
-        />
+        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(organization._id, index)" />
         }
       </td>
       }
@@ -158,10 +168,16 @@
   <!-- No Data template -->
   <ng-template #emptymessage>
     <tr>
-      <td colspan="5">No permissions found.</td>
+      <td colspan="6">No organizations found.</td>
     </tr>
   </ng-template>
 </p-table>
 }
 <!-- New/Update modal -->
-<c-modal #staffModal backdrop="static" alignment="center" id="staffModal" [(visible)]="showModal"></c-modal>
+<c-modal
+  #organizationModal
+  backdrop="static"
+  alignment="center"
+  id="organizationModal"
+  [(visible)]="showModal"
+></c-modal>
