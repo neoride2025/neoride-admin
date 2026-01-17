@@ -65,7 +65,7 @@ export class StaffsComponent {
 
   getStaffs() {
     this.loading = true;
-    this.staff.getStaffs().subscribe((res: any) => {
+    this.staff.getAdminStaffs().subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200)
         this.staffs = res.data;

@@ -4,19 +4,19 @@
 <!-- Table starting -->
 <p-table
   #dt
-  [value]="permissions"
+  [value]="orgUsers"
   dataKey="_id"
   [paginator]="true"
   showGridlines
   [rows]="10"
   [rowsPerPageOptions]="[5, 10, 25]"
-  [globalFilterFields]="['label', 'isActive', 'key']"
+  [globalFilterFields]="['name', 'email', 'role', 'organization.name', 'isActive', 'key']"
   filterDisplay="menu"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
     <div class="flex-top-center gap-2">
-      <h5 class="mb-0">Permissions</h5>
+      <h5 class="mb-0">Users</h5>
       <input
         pInputText
         type="text"
@@ -25,7 +25,7 @@
         class="ms-auto"
       />
       @if(canDo.create){
-      <button pButton size="small" [cModalToggle]="permissionModal.id">
+      <button pButton size="small" [cModalToggle]="orgUserModal.id">
         <i class="pi pi-plus" pButtonIcon></i>
         <span pButtonLabel>New</span>
       </button>
@@ -36,52 +36,67 @@
   <!-- Header -->
   <ng-template pTemplate="header">
     <tr>
-      <!-- Permission Label -->
-      <th style="width: 180px" pSortableColumn="label">
+      <!-- Organization User Name -->
+      <th style="width: 150px">
         <div class="flex-space">
-          <h6>Label</h6>
+          <h6>Name</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="label"
+            field="name"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Permission Key -->
-      <th style="width: 220px">
+      <!-- Organization User Email -->
+      <th style="width: 150px">
         <div class="flex-space">
-          <h6>Key</h6>
+          <h6>Email</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="key"
+            field="email"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Permission's Domain -->
+      <!-- Organization's Name -->
       <th style="width: 180px">
         <div class="flex-space">
-          <h6>Domain</h6>
+          <h6>Organization</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="domain"
+            field="organization.name"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Permission Active Status -->
+      <!-- Organization User's Role -->
+      <th style="width: 180px">
+        <div class="flex-space">
+          <h6>Role</h6>
+          <p-columnFilter
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+            type="text"
+            field="role.name"
+            matchMode="contains"
+            display="menu"
+          />
+        </div>
+      </th>
+      <!-- Organization User Active Status -->
       <th style="width: 120px">
         <div class="flex-space">
           <h6>Status</h6>
@@ -121,28 +136,35 @@
   </ng-template>
 
   <!-- Body -->
-  <ng-template pTemplate="body" let-permission let-index="rowIndex">
+  <ng-template pTemplate="body" let-user let-index="rowIndex">
     <tr>
-      <td class="text-truncate" [title]="permission.label">{{ permission.label }}</td>
-      <td class="text-truncate" [title]="permission.key">{{ permission.key }}</td>
-      <td class="text-truncate" [title]="permission.domain">{{ permission.domain }}</td>
+      <td class="text-truncate" [title]="user.name">{{ user.name }}</td>
+      <td class="text-truncate" [title]="user.email">{{ user.email }}</td>
+      <td class="text-truncate" [title]="user.organization.name">{{ user.organization.name }}</td>
+      <td class="text-truncate" [title]="user.role.name">{{ user.role.name }}</td>
       <td>
         <c-form-check [switch]="true" sizing="xl">
           <input
             cFormCheckInput
-            [checked]="permission.isActive"
+            [checked]="user.isActive"
             type="checkbox"
-            (click)="statusChange($event, permission)"
-            [disabled]="!canDo.update"
+            (click)="statusChange($event, user)"
+            [disabled]="!canDo.update || user.isSystemUser"
           />
         </c-form-check>
       </td>
       @if(canDo.update || canDo.delete){
       <td class="d-flex gap-3">
         @if(canDo.update){
-        <p-button label="Update" severity="info" size="small" />
+        <p-button label="Update" severity="info" size="small" [disabled]="user.isSystemUser" />
         } @if(canDo.delete){
-        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(permission._id, index)" />
+        <p-button
+          label="Delete"
+          severity="danger"
+          size="small"
+          [disabled]="user.isSystemUser"
+          (click)="confirmDelete(user._id, index)"
+        />
         }
       </td>
       }
@@ -152,51 +174,10 @@
   <!-- No Data template -->
   <ng-template #emptymessage>
     <tr>
-      <td colspan="5">No permissions found.</td>
+      <td colspan="6">No users found.</td>
     </tr>
   </ng-template>
 </p-table>
 }
 <!-- New/Update modal -->
-<c-modal #permissionModal backdrop="static" alignment="center" id="permissionModal" [(visible)]="showModal">
-  <c-modal-header>
-    <h5 cModalTitle>{{ isModalForUpdate ? "Update" : "New" }} Permission</h5>
-  </c-modal-header>
-  <c-modal-body>
-    <form cForm>
-      <!-- <div class="mb-2">
-        <label cLabel for="inputLabel-1">Module</label>
-        <select aria-label="Default select example" cSelect name="permissionModule" [(ngModel)]="permissionForm.module">
-          <option>Select Module</option>
-          @for (module of modules; track module) {
-          <option [value]="module._id">{{ module.name }}</option>
-          }
-        </select>
-      </div> -->
-      <div class="mb-2">
-        <label cLabel for="permissionLabel">Label</label>
-        <input
-          cFormControl
-          id="permissionLabel"
-          type="text"
-          name="permissionLabel"
-          [(ngModel)]="permissionForm.label"
-        />
-      </div>
-      <div class="mb-2">
-        <label cLabel for="roleDescription">Description</label>
-        <textarea
-          cFormControl
-          id="roleDescription"
-          name="roleDescription"
-          rows="10"
-          [(ngModel)]="permissionForm.description"
-        ></textarea>
-      </div>
-    </form>
-  </c-modal-body>
-  <c-modal-footer>
-    <p-button (click)="closeModal(true)" label="Close" severity="secondary" size="small" />
-    <p-button (click)="process()" [label]="isModalForUpdate ? 'Update' : 'Create'" severity="primary" size="small" />
-  </c-modal-footer>
-</c-modal>
+<c-modal #orgUserModal backdrop="static" alignment="center" id="orgUserModal" [(visible)]="showModal"></c-modal>

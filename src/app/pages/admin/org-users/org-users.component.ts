@@ -1,8 +1,8 @@
+import { StaffAPIService } from './../../../apis/staff.service';
 import { Component, inject, ViewChild } from '@angular/core';
 import { PERMISSIONS } from './../../../core/constants/permissions.constants';
 import { HelperService } from '../../../services/helper.service';
 import { ToastService } from '../../../services/toast.service';
-import { OrganizationAPIService } from '../../../apis/organization.service';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent, FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective } from '@coreui/angular';
@@ -15,22 +15,22 @@ import { LoaderComponent } from '../../../global-components/loader/loader.compon
 import { SharedModule } from '../../../others/shared.module';
 
 @Component({
-  selector: 'app-organizations',
+  selector: 'app-org-users',
   imports: [
     SharedModule, LoaderComponent, CommonModule,
     TableModule, InputTextModule, MultiSelectModule, ButtonModule, SelectModule, Badge,
     ModalToggleDirective, ModalToggleDirective, ModalComponent, ModalHeaderComponent, ModalTitleDirective, ModalBodyComponent, ModalFooterComponent,
     FormCheckComponent, FormCheckInputDirective, FormControlDirective, FormDirective, FormLabelDirective, FormSelectDirective
   ],
-  templateUrl: './organizations.component.html',
-  styleUrl: './organizations.component.scss',
+  templateUrl: './org-users.component.html',
+  styleUrl: './org-users.component.scss',
 })
-export class OrganizationsComponent {
+export class OrgUsersComponent {
 
   // injectable dependencies
   helperService = inject(HelperService);
   toastService = inject(ToastService);
-  organization = inject(OrganizationAPIService);
+  staff = inject(StaffAPIService);
 
   // common things
   config: any = this.helperService.config;
@@ -38,36 +38,36 @@ export class OrganizationsComponent {
   loading = false;
   allowedPermissions = this.userInfo.permissions;
   canDo: any = {
-    create: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORGANIZATIONS_CREATE),
-    update: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORGANIZATIONS_UPDATE),
-    delete: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORGANIZATIONS_DELETE),
-    export: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORGANIZATIONS_EXPORT)
+    create: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORG_USERS_CREATE),
+    update: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORG_USERS_UPDATE),
+    delete: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORG_USERS_DELETE),
+    export: this.allowedPermissions.includes(PERMISSIONS.ADMIN_ORG_USERS_EXPORT)
   }
 
   // table & list
   @ViewChild('dt') table!: Table;
-  organizations: any[] = [];
+  orgUsers: any[] = [];
   statuses = this.helperService.getStatusItems();
 
-  // new / update organization
+  // modal things
   showModal = false;
   submitting = false;
   isModalForUpdate = false;
-  organizationForm: any = {};
+  orgUserForm: any = {};
 
   ngOnInit() {
-    this.getOrganizations();
+    this.getOrgUsers();
     this.helperService.closeModalIfOpened(() => {
       this.closeModal(true);
     });
   }
 
-  getOrganizations() {
+  getOrgUsers() {
     this.loading = true;
-    this.organization.getOrganizations().subscribe((res: any) => {
+    this.staff.getOrgUsers().subscribe((res: any) => {
       this.loading = false;
       if (res.status === 200)
-        this.organizations = res.data;
+        this.orgUsers = res.data;
       else
         this.toastService.error(res.message);
     }, err => {
@@ -78,36 +78,36 @@ export class OrganizationsComponent {
 
   //#region Table action functions
 
-  statusChange(event: any, organization: any) {
-    if (!this.canDo.update || organization.isSystemUser) {
+  statusChange(event: any, orgUser: any) {
+    if (!this.canDo.update || orgUser.isSystemUser) {
       event.preventDefault();
       return;
     }
-    if (organization.isActive)
-      this.getOrganizationChangedStatus(event, organization);
+    if (orgUser.isActive)
+      this.getOrgUserChangedStatus(event, orgUser);
     else
-      this.updateStatus(event, organization);
+      this.updateStatus(event, orgUser);
   }
 
-  getOrganizationChangedStatus(event: any, organization: any) {
+  getOrgUserChangedStatus(event: any, orgUser: any) {
     event.preventDefault();
     const alertPayload = {
-      header: 'Organization Status Update',
-      message: 'Are you sure you want to deactivate this organization?',
+      header: 'Organization User Status Update',
+      message: 'Are you sure you want to deactivate this User?',
       acceptBtnLabel: 'Deactivate',
       rejectBtnLabel: 'Cancel'
     }
     this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
-      this.updateStatus(event, organization);
+      this.updateStatus(event, orgUser);
     })
   }
 
-  updateStatus(event: any, organization: any) {
-    this.organization.updateOrganizationStatus(organization._id, { isActive: !organization.isActive }).subscribe((res: any) => {
+  updateStatus(event: any, orgUser: any) {
+    this.staff.updateStaffStatus(orgUser._id, { isActive: !orgUser.isActive }).subscribe((res: any) => {
       if (res.status === 200) {
         this.toastService.success(res.message, 'Organization Status');
-        organization.isActive = !organization.isActive;
+        orgUser.isActive = !orgUser.isActive;
       }
       else {
         this.toastService.info(res.message, 'Organization Status');
@@ -119,55 +119,54 @@ export class OrganizationsComponent {
     })
   }
 
-  confirmDelete(organizationId: any, index: number) {
+  confirmDelete(staffId: any, index: number) {
     if (!this.canDo.delete) return;
     const alertPayload = {
-      header: 'Organization Deletion',
-      message: 'This action will delete all staffs under this organization. Are you sure you want to proceed?',
+      header: 'Staff Deletion',
+      message: 'This action will log out the assigned user. Do you want to continue?',
       acceptBtnLabel: 'Delete',
       rejectBtnLabel: 'Cancel'
     }
     this.helperService.actionConfirmation(alertPayload, (action: boolean) => {
       if (!action) return;
-      this.deleteOrganization(organizationId, index)
+      this.deleteStaff(staffId, index)
     })
   }
 
-  deleteOrganization(organizationId: any, index: number) {
-    this.organization.deleteOrganization(organizationId).subscribe((res: any) => {
+  deleteStaff(staffId: any, index: number) {
+    this.staff.deleteStaff(staffId).subscribe((res: any) => {
       if (res.status === 200) {
-        this.toastService.success(res.message, 'Organization Deletion');
-        this.organizations.splice(index, 1); // remove the deleted organization from the list
+        this.toastService.success(res.message, 'Staff Deletion');
+        this.orgUsers.splice(index, 1); // remove the deleted staff from the list
         this.table.reset(); // reset the table to reflect changes (pagination)
       }
       else
-        this.toastService.error(res.message, 'Organization Deletion');
+        this.toastService.error(res.message, 'Staff Deletion');
     }, err => {
-      this.toastService.error(err.error.message, 'Organization Deletion');
+      this.toastService.error(err.error.message, 'Staff Deletion');
     })
   }
 
   //#endregion
 
-
-  //#region new / update organization
+  //#region new / update staff
 
   process() {
-    this.isModalForUpdate ? this.updateOrganization() : this.createOrganization();
+    this.isModalForUpdate ? this.updateStaff() : this.createStaff();
   }
 
-  createOrganization() {
-    if (!this.organizationForm.name)
-      return this.toastService.error('Please enter organization name');
-    else if (this.organizationForm.label.length < this.config.nameMinLength)
-      return this.toastService.error('Organization name should be minimum 3 characters');
+  createStaff() {
+    if (!this.orgUserForm.name)
+      return this.toastService.error('Please enter staff name');
+    else if (this.orgUserForm.label.length < this.config.nameMinLength)
+      return this.toastService.error('Staff name should be minimum 3 characters');
     this.submitting = true;
-    this.organization.createOrganization(this.organizationForm).subscribe((res: any) => {
+    this.staff.createStaff(this.orgUserForm).subscribe((res: any) => {
       this.submitting = false;
       if (res.status === 201) {
         this.toastService.success(res.message);
         this.closeModal(true);
-        this.pushNewOrganizationToList(res.data);
+        this.pushNewStaffToList(res.data);
       }
       else
         this.toastService.error(res.message);
@@ -177,17 +176,17 @@ export class OrganizationsComponent {
     })
   }
 
-  // will push the recently created organization to the list without call the API
-  pushNewOrganizationToList(organization: any) {
-    this.organizations.splice(0, 0, organization); // this will add the new organization to the list;
+  // will push the recently created staff to the list without call the API
+  pushNewStaffToList(staff: any) {
+    this.orgUsers.splice(0, 0, staff); // this will add the new staff to the list;
   }
 
-  updateOrganization() {
+  updateStaff() {
 
   }
 
   clearForm() {
-    this.organizationForm = {};
+    this.orgUserForm = {};
   }
 
   closeModal(clearForm?: boolean) {

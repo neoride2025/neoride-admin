@@ -39,6 +39,10 @@ export const ADMIN_ROUTES: Routes = [
             {
                 path: 'organizations',
                 loadComponent: () => import('./organizations/organizations.component').then(c => c.OrganizationsComponent)
+            },
+            {
+                path: 'org-users',
+                loadComponent: () => import('./org-users/org-users.component').then(c => c.OrgUsersComponent)
             }
         ]
     }

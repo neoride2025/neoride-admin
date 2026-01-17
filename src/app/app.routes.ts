@@ -40,7 +40,7 @@ export const routes: Routes = [
   // ============ ORGANIZATION ROUTES ============
   {
     path: 'org',
-    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+    loadChildren: () => import('./pages/organization/organization.routes').then(m => m.ORGANIZATION_ROUTES)
   },
   { path: '**', redirectTo: '404' },
 ];
