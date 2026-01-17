@@ -31,10 +31,11 @@ export class HelperService {
   }
 
   // clear the session data & navigate to login
-  logout(logoutMessage?: string) {
+  logout(logoutMessage?: string, showToast?: boolean) {
     sessionStorage.clear();
     logoutMessage = logoutMessage ? logoutMessage : 'Logout Successfully';
-    this.toastService.success(logoutMessage);
+    if (showToast)
+      this.toastService.success(logoutMessage);
     this.goTo('login');
   }
 
@@ -79,24 +80,6 @@ export class HelperService {
       .replace(/^_+|_+$/g, '')       // 👈 trim _
       .toUpperCase();
   }
-
-  // function to prepare key from label/name text
-  labelToPermissionKey(label: unknown): string {
-    if (typeof label !== 'string') return '';
-
-    const parts = label
-      .trim()
-      .replace(/[^a-zA-Z\s]/g, '') // remove symbols
-      .split(/\s+/);
-
-    if (parts.length < 2) return '';
-
-    const action = parts[0];
-    const module = parts.slice(1).join('_');
-
-    return `${module}_${action}`.toUpperCase();
-  }
-
 
   // function to close any modal when routing started
   closeModalIfOpened(callBack: any) {
@@ -197,6 +180,11 @@ export class HelperService {
         callback(0);
       },
     });
+  }
+
+  // function to split the field key by . and return the value (ownerStaff.name)
+  resolveFieldData(data: any, field: string): any {
+    return field.split('.').reduce((obj, key) => obj?.[key], data);
   }
 
 

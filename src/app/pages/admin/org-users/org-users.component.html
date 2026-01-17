@@ -4,21 +4,19 @@
 <!-- Table starting -->
 <p-table
   #dt
-  [value]="navigationItems"
+  [value]="orgUsers"
   dataKey="_id"
   [paginator]="true"
   showGridlines
   [rows]="10"
   [rowsPerPageOptions]="[5, 10, 25]"
-  [globalFilterFields]="['title', 'route', 'requiredPermission', 'type', 'isActive']"
+  [globalFilterFields]="['name', 'email', 'role', 'organization.name', 'isActive', 'key']"
   filterDisplay="menu"
-  (sortFunction)="customSort($event)"
-  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
     <div class="flex-top-center gap-2">
-      <h5 class="mb-0">Navigation</h5>
+      <h5 class="mb-0">Users</h5>
       <input
         pInputText
         type="text"
@@ -27,7 +25,7 @@
         class="ms-auto"
       />
       @if(canDo.create){
-      <button pButton size="small" [cModalToggle]="navigationModal.id">
+      <button pButton size="small" [cModalToggle]="orgUserModal.id">
         <i class="pi pi-plus" pButtonIcon></i>
         <span pButtonLabel>New</span>
       </button>
@@ -38,79 +36,67 @@
   <!-- Header -->
   <ng-template pTemplate="header">
     <tr>
-      <!-- Navigation Title -->
-      <th style="width: 150px" pSortableColumn="title">
+      <!-- Organization User Name -->
+      <th style="width: 150px">
         <div class="flex-space">
-          <div class="d-flex gap-3">
-            <h6>Title</h6>
-            <p-sortIcon field="title"></p-sortIcon>
-          </div>
+          <h6>Name</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="title"
+            field="name"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Route -->
-      <th style="width: 160px" pSortableColumn="route">
+      <!-- Organization User Email -->
+      <th style="width: 150px">
         <div class="flex-space">
-          <div class="d-flex gap-3">
-            <h6>Route</h6>
-            <p-sortIcon field="route"></p-sortIcon>
-          </div>
+          <h6>Email</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="route"
+            field="email"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Navigation Required Permission -->
-      <th style="width: 180px" pSortableColumn="requiredPermission">
+      <!-- Organization's Name -->
+      <th style="width: 180px">
         <div class="flex-space">
-          <div class="d-flex gap-3">
-            <h6>Permission</h6>
-            <p-sortIcon field="requiredPermission"></p-sortIcon>
-          </div>
+          <h6>Organization</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="requiredPermission"
+            field="organization.name"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Navigation Type -->
-      <th style="width: 100px" pSortableColumn="type">
+      <!-- Organization User's Role -->
+      <th style="width: 180px">
         <div class="flex-space">
-          <div class="d-flex gap-3">
-            <h6>Type</h6>
-            <p-sortIcon field="type"></p-sortIcon>
-          </div>
+          <h6>Role</h6>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
             [showAddButton]="false"
             type="text"
-            field="type"
+            field="role.name"
             matchMode="contains"
             display="menu"
           />
         </div>
       </th>
-      <!-- Navigation Active Status -->
+      <!-- Organization User Active Status -->
       <th style="width: 120px">
         <div class="flex-space">
           <h6>Status</h6>
@@ -140,7 +126,7 @@
           </p-columnFilter>
         </div>
       </th>
-      <!-- Navigation Actions -->
+      <!-- Permission Actions -->
       @if(canDo.update || canDo.delete){
       <th style="width: 200px">
         <h6>Actions</h6>
@@ -150,37 +136,35 @@
   </ng-template>
 
   <!-- Body -->
-  <ng-template pTemplate="body" let-navigationItem let-index="rowIndex">
+  <ng-template pTemplate="body" let-user let-index="rowIndex">
     <tr>
-      <td class="text-truncate" [title]="navigationItem.title">
-        @if(navigationItem.type === 'MENU'){
-        <svg cIcon class="me-2" [name]="navigationItem.icon" size="lg"></svg>
-        }
-        {{ navigationItem.title }}
-      </td>
-      <td class="text-truncate" [title]="navigationItem.route">{{ navigationItem.route || "-" }}</td>
-      <td class="text-truncate" [title]="navigationItem.requiredPermission">
-        {{ navigationItem.requiredPermission || "-" }}
-      </td>
-      <td class="text-truncate" [title]="navigationItem.type">{{ navigationItem.type }}</td>
+      <td class="text-truncate" [title]="user.name">{{ user.name }}</td>
+      <td class="text-truncate" [title]="user.email">{{ user.email }}</td>
+      <td class="text-truncate" [title]="user.organization.name">{{ user.organization.name }}</td>
+      <td class="text-truncate" [title]="user.role.name">{{ user.role.name }}</td>
       <td>
         <c-form-check [switch]="true" sizing="xl">
           <input
             cFormCheckInput
-            [checked]="navigationItem.isActive"
-            [(ngModel)]="navigationItem.isActive"
+            [checked]="user.isActive"
             type="checkbox"
-            (click)="updateStatus($event, navigationItem)"
-            [disabled]="!canDo.update"
+            (click)="statusChange($event, user)"
+            [disabled]="!canDo.update || user.isSystemUser"
           />
         </c-form-check>
       </td>
       @if(canDo.update || canDo.delete){
       <td class="d-flex gap-3">
         @if(canDo.update){
-        <p-button label="Update" severity="info" size="small" />
+        <p-button label="Update" severity="info" size="small" [disabled]="user.isSystemUser" />
         } @if(canDo.delete){
-        <p-button label="Delete" severity="danger" size="small" (click)="confirmDelete(navigationItem._id, index)" />
+        <p-button
+          label="Delete"
+          severity="danger"
+          size="small"
+          [disabled]="user.isSystemUser"
+          (click)="confirmDelete(user._id, index)"
+        />
         }
       </td>
       }
@@ -190,10 +174,10 @@
   <!-- No Data template -->
   <ng-template #emptymessage>
     <tr>
-      <td colspan="6">No navigation items found.</td>
+      <td colspan="6">No users found.</td>
     </tr>
   </ng-template>
 </p-table>
 }
 <!-- New/Update modal -->
-<c-modal #navigationModal backdrop="static" alignment="center" id="navigationModal" [(visible)]="showModal"> </c-modal>
+<c-modal #orgUserModal backdrop="static" alignment="center" id="orgUserModal" [(visible)]="showModal"></c-modal>

@@ -57,7 +57,7 @@ export class AuthInterceptor implements HttpInterceptor {
             }),
             catchError((refreshErr) => {
               this.refreshSubject.error(refreshErr);
-              this.auth.logout();
+              this.auth.logout('', false); // will not show logout success toast (since it is a refresh error)
               return throwError(() => refreshErr);
             }),
             finalize(() => {

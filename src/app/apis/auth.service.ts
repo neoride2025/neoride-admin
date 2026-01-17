@@ -34,19 +34,19 @@ export class AuthAPIService {
         return this.httpClient.post(this.authUrl + 'login', body, { withCredentials: true });
     }
 
-    logout(userId?: any) {
+    logout(userId?: any, showToast?: boolean) {
         // 1️⃣ Call backend logout
         this.httpClient.post(this.authUrl + 'logout', { userId }, { withCredentials: true }).subscribe({
             next: (res: any) => {
                 const message = userId ? res.message : 'Session out, please login again';
-                this.clearClientState(message)
+                this.clearClientState(message, showToast)
             },
             error: () => this.clearClientState() // even if API fails
         });
     }
 
-    clearClientState(logoutMessage?: string) {
-        this.helperService.logout(logoutMessage);
+    clearClientState(logoutMessage?: string, showToast?: boolean) {
+        this.helperService.logout(logoutMessage, showToast);
     }
 
 

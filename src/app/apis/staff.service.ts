@@ -17,8 +17,12 @@ export class StaffAPIService {
     constructor() {
         this.staffUrl = environment.apiURL + 'admin/staffs';
     }
-    getStaffs(force: boolean = false) {
-        return this.cacheService.getCached('staffs', () => this.httpClient.get(this.staffUrl, { withCredentials: true }), force);
+    getAdminStaffs(force: boolean = false) {
+        return this.cacheService.getCached('staffs', () => this.httpClient.get(this.staffUrl + '/ADMIN', { withCredentials: true }), force);
+    }
+
+    getOrgUsers(force: boolean = false) {
+        return this.cacheService.getCached('org-users', () => this.httpClient.get(this.staffUrl + '/ORG', { withCredentials: true }), force);
     }
 
     createStaff(payload: any) {

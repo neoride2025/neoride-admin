@@ -12,6 +12,8 @@
   [rowsPerPageOptions]="[5, 10, 25]"
   [globalFilterFields]="['name', 'email', 'role', 'isActive', 'key']"
   filterDisplay="menu"
+  (sortFunction)="customSort($event)"
+  [customSort]="true"
 >
   <!-- Global Search -->
   <ng-template pTemplate="caption">
@@ -37,9 +39,12 @@
   <ng-template pTemplate="header">
     <tr>
       <!-- Staff Name -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="name">
         <div class="flex-space">
-          <h6>Name</h6>
+          <div class="d-flex gap-3">
+            <h6>Name</h6>
+            <p-sortIcon field="name"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -52,9 +57,12 @@
         </div>
       </th>
       <!-- Staff Email -->
-      <th style="width: 220px">
+      <th style="width: 220px" pSortableColumn="email">
         <div class="flex-space">
-          <h6>Email</h6>
+          <div class="d-flex gap-3">
+            <h6>Email</h6>
+            <p-sortIcon field="email"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -67,9 +75,12 @@
         </div>
       </th>
       <!-- Staff's Role -->
-      <th style="width: 180px">
+      <th style="width: 180px" pSortableColumn="role.name">
         <div class="flex-space">
-          <h6>Role</h6>
+          <div class="d-flex gap-3">
+            <h6>Role</h6>
+            <p-sortIcon field="role.name"></p-sortIcon>
+          </div>
           <p-columnFilter
             [showMatchModes]="false"
             [showOperator]="false"
@@ -119,6 +130,7 @@
       }
     </tr>
   </ng-template>
+
   <!-- Body -->
   <ng-template pTemplate="body" let-staff let-index="rowIndex">
     <tr>
